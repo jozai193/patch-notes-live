@@ -12,7 +12,8 @@
     "test": "npm run test --workspaces",
     "lint": "eslint .",
     "build": "tsc -b",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "dev": "npm run dev -w @patch-notes-live/overlay"
   },
   "devDependencies": {
     "eslint": "^9.39.0",

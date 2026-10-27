@@ -8,3 +8,6 @@ patches/
 .vite/
 coverage/
 *.tsbuildinfo
+dist-types/
+.playwright-cli/
+output/playwright/

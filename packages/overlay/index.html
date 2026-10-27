@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101a1b" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2385ead0'/%3E%3Cpath d='M9 8h10l5 5-5 6h-5v6H9zm5 5v2h4l2-1-2-1z' fill='%23101a1b'/%3E%3C/svg%3E"
+    />
+    <title>Patch Notes Live — Arena</title>
+  </head>
+  <body>
+    <main id="stage" aria-label="Patch Notes Live arena game">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark">P/</span>
+          <div>
+            <h1>PATCH NOTES <span>LIVE</span></h1>
+            <p>THE RULES ARE NEVER FINAL.</p>
+          </div>
+        </div>
+        <div class="session">
+          <span class="status-dot"></span> ARENA SURVIVAL <span class="version">v1.0</span>
+        </div>
+      </header>
+      <div class="arena-heading">
+        <span><span class="status-dot"></span> RUN IN PROGRESS</span
+        ><span id="seed-label">SEED 1</span>
+      </div>
+      <section class="playfield" aria-label="Arena">
+        <canvas
+          id="game"
+          width="840"
+          height="560"
+          tabindex="0"
+          aria-label="Game arena. WASD moves, mouse aims, hold left click to shoot. B toggles bot. R restarts after game over."
+        ></canvas>
+        <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+        <section id="game-over" class="game-over" aria-label="Run complete" hidden>
+          <span class="eyebrow">RUN COMPLETE</span>
+          <h2>ONE MORE PATCH.</h2>
+          <p>You held the line. Ready for another run?</p>
+          <div class="results">
+            <div><span>SURVIVED</span><strong id="final-time">00:00</strong></div>
+            <div><span>FINAL SCORE</span><strong id="final-score">0</strong></div>
+          </div>
+          <button id="restart" type="button">RESTART RUN <kbd>R</kbd></button>
+        </section>
+      </section>
+      <aside class="sidebar" aria-label="Run information">
+        <section class="panel telemetry">
+          <div class="panel-heading">
+            <h2>RUN TELEMETRY</h2>
+            <span class="tiny-dot"></span>
+          </div>
+          <div class="hp-label">
+            <span>PLAYER INTEGRITY</span><strong id="hp">100 / 100</strong>
+          </div>
+          <div
+            id="hp-meter"
+            class="hp-meter"
+            role="progressbar"
+            aria-label="Player health"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="100"
+          >
+            <div id="hp-fill"></div>
+          </div>
+          <div class="stats">
+            <div><span>WAVE</span><strong id="wave">01</strong></div>
+            <div><span>SCORE</span><strong id="score">0000</strong></div>
+          </div>
+          <div class="time"><span>SURVIVAL TIME</span><strong id="time">00:00</strong></div>
+        </section>
+        <section class="panel patches">
+          <div class="panel-heading">
+            <h2>ACTIVE PATCHES</h2>
+            <span class="count">0 / 3</span>
+          </div>
+          <div class="empty-mark">[ + ]</div>
+          <h3>A clean slate.</h3>
+          <p>No active patches.<br />The base rules are in play.</p>
+          <div class="base-rule"><span class="tiny-dot"></span> BASE GAME <span>v1.0</span></div>
+        </section>
+        <button id="bot-toggle" class="bot-toggle" type="button" aria-pressed="false">
+          <span class="bot-icon">⌘</span
+          ><span
+            ><strong>AUTOPILOT</strong><small id="bot-label">Off · You're in control</small></span
+          ><kbd>B</kbd>
+        </button>
+      </aside>
+      <footer>
+        <div>
+          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE <span class="divider">/</span> MOUSE
+          AIM <span class="divider">/</span> HOLD CLICK FIRE
+        </div>
+        <span>STAY ALIVE. CHANGE THE GAME.</span>
+      </footer>
+      <div id="tint" aria-hidden="true"></div>
+    </main>
+    <script type="module" src="/src/index.ts"></script>
+  </body>
+</html>

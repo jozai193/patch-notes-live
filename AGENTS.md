@@ -25,7 +25,7 @@ You are building **Patch Notes Live**, a Twitch-integrated browser game where vi
 
 - `npm install`: install all workspaces
 - `npm test`: all tests
-- `npm run dev`: overlay (Vite) and server together, once Step 8 exists
+- `npm run dev`: overlay (Vite); add the server alongside it once Step 8 exists
 - `npm run patch -- "<rule text>"`: generate a mod via Codex, once Step 6 exists
 - `npx tsc -b`: type-check everything
 

@@ -1,6 +1,42 @@
 # Patch Notes Live
 
-Step 1 implements the shared deterministic game core. The other four packages are intentionally empty workspace stubs. See [PLAN.md](PLAN.md) for the later build steps.
+Steps 1–2 implement the shared deterministic game core and a playable browser overlay. The mod-api, harness and server packages are workspace stubs. See [PLAN.md](PLAN.md) for the later build steps.
+
+## Play locally
+
+Use Node 24 and npm:
+
+```sh
+npm install
+npm run dev
+```
+
+Open [localhost:5173](http://localhost:5173). The root command starts the overlay; `npm run dev -w @patch-notes-live/overlay` does the same thing. Vite imports engine TypeScript source through an alias, so no engine build is needed before starting the game.
+
+Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. Press **B** or click Autopilot to toggle the scripted bot. After game over, press **R** or click Restart Run to restart with the same seed. Focus the game window to use the keyboard. Controls reset when the window loses focus; hidden tabs pause simulation time instead of accumulating a catch-up backlog.
+
+- `?seed=42` selects a deterministic seed (default 1).
+- `?bot=1` starts with autopilot on.
+- `?obs=1` makes the page and arena background transparent and hides the cursor.
+- Combine them: [OBS + bot, seed 1](http://localhost:5173/?obs=1&bot=1&seed=1).
+
+The layout uses a 1280×720 logical stage scaled to fit the window. Rendering interpolates between fixed 60 Hz simulation snapshots. Particles, hit flashes, screen shake, toast fading and tint timing are cosmetic; they do not consume the engine RNG. The HUD shows HP, wave, score, survival time and v1.0. Active patches is a placeholder for later steps.
+
+## Add to OBS
+
+1. Keep the local dev server running.
+2. In OBS Sources, add a **Browser** source.
+3. Set URL to `http://localhost:5173/?obs=1&bot=1&seed=1`, width **1280**, height **720**, and frame rate **60**.
+4. Place the source above your scene or camera; the arena backdrop is transparent. Use **Interact** on the Browser source to give the game keyboard/mouse input, or leave bot mode enabled.
+5. Refresh the Browser source to begin a new session. R restarts after game over without reloading.
+
+To build the overlay for static hosting:
+
+```sh
+npm run build -w @patch-notes-live/overlay
+```
+
+The output is `packages/overlay/dist/`. Runtime Twitch integration and patch loading are later PLAN.md steps.
 
 ## Local checks
 
@@ -14,7 +50,7 @@ npm run lint
 npm run format
 ```
 
-The root test script runs every workspace. Empty stubs explicitly allow no tests; the engine requires tests. TypeScript builds use strict mode, ESM and project references. Engine compilation has only the ES2022 library, with no DOM or ambient Node types. No credentials are needed for Step 1.
+The root test script runs every workspace. Empty stubs explicitly allow no tests; engine and overlay tests are required. TypeScript builds use strict mode, ESM and project references. Only the overlay includes DOM libraries; engine compilation has only the ES2022 library, with no DOM or ambient Node types. Overlay type-check output goes to `dist-types/`, separate from the Vite production bundle. No credentials are needed for Steps 1–2.
 
 ## Engine
 
@@ -38,7 +74,7 @@ Initialization calls `onStart` before spawn notifications. Each live tick calls 
 
 Game entity reads are detached and shared by entity ID within each hook invocation. After the hook returns, changes to known mutable fields are diffed into validated `setEntity` commands. This includes `g.player`, `enemies()`/`entities()` results, hook event arguments and `spawn()` return values. Unknown properties are ignored; ID and kind remain immutable. `g.set(entity, fields)` applies validated changes to the tracked copy, so subsequent reads and assignments in the same hook see them. Spawn commands run before mutation diffs; removed entities are not recreated by a diff. Invalid field batches are rejected. Copies retained beyond a hook invocation cannot change the world. Game spawn/remove/UI methods queue validated commands. Physics and arena changes are collected after each hook. `Game.state` is host-owned scratch data. Step 3 will marshal sandbox mutations into `Command[]` using the same boundary.
 
-`applyCommands` accepts untrusted parsed data and returns an acceptance flag per command. Invalid commands are rejected atomically. At most 1,000 commands per batch and 300 entities are accepted; the player cannot be removed. IDs and kinds cannot be changed. UI events retain the newest 32 entries across ticks. Snapshots read them without consuming them; the future renderer calls `world.drainEvents()` to consume the buffer once. Events submitted between ticks remain available until drained or displaced by the cap.
+`applyCommands` accepts untrusted parsed data and returns an acceptance flag per command. Invalid commands are rejected atomically. At most 1,000 commands per batch and 300 entities are accepted; the player cannot be removed. IDs and kinds cannot be changed. UI events retain the newest 32 entries across ticks. Snapshots read them without consuming them; the overlay calls `world.drainEvents()` once per frame. Events submitted between ticks remain available until drained or displaced by the cap.
 
 | Field                | Accepted range/format                     |
 | -------------------- | ----------------------------------------- |
@@ -55,4 +91,4 @@ Game entity reads are detached and shared by entity ID within each hook invocati
 | toast                | 80 characters, control characters removed |
 | tint duration        | 0–10,000 milliseconds                     |
 
-NaN and infinities are rejected. Text length validation is not content moderation; chat intake and UI text moderation remain later PLAN.md work. There is no renderer, network integration, sandbox or patch pipeline in Step 1.
+NaN and infinities are rejected. Text length validation is not content moderation; chat intake and UI text moderation remain later PLAN.md work. The current overlay runs the base engine with no network integration, sandbox or patch pipeline.
