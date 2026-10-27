@@ -12,6 +12,7 @@
     "vite": "^8.3.5"
   },
   "dependencies": {
-    "@patch-notes-live/engine": "0.0.0"
+    "@patch-notes-live/engine": "0.0.0",
+    "@patch-notes-live/mod-api": "0.0.0"
   }
 }

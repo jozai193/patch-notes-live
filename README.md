@@ -1,6 +1,6 @@
 # Patch Notes Live
 
-Steps 1–2 implement the shared deterministic game core and a playable browser overlay. The mod-api, harness and server packages are workspace stubs. See [PLAN.md](PLAN.md) for the later build steps.
+Steps 1–3 implement the shared deterministic game core, a playable browser overlay and a QuickJS mod sandbox. The harness and server packages are workspace stubs. See [PLAN.md](PLAN.md) for the later build steps.
 
 ## Play locally
 
@@ -18,9 +18,10 @@ Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. Pre
 - `?seed=42` selects a deterministic seed (default 1).
 - `?bot=1` starts with autopilot on.
 - `?obs=1` makes the page and arena background transparent and hides the cursor.
+- `?mod=split-on-hit` loads the sandboxed demo mod; enemies split into two smaller enemies when shot. Try [the demo with autopilot](http://localhost:5173/?bot=1&mod=split-on-hit&seed=1).
 - Combine them: [OBS + bot, seed 1](http://localhost:5173/?obs=1&bot=1&seed=1).
 
-The layout uses a 1280×720 logical stage scaled to fit the window. Rendering interpolates between fixed 60 Hz simulation snapshots. Particles, hit flashes, screen shake, toast fading and tint timing are cosmetic; they do not consume the engine RNG. The HUD shows HP, wave, score, survival time and v1.0. Active patches is a placeholder for later steps.
+The layout uses a 1280×720 logical stage scaled to fit the window. Rendering interpolates between fixed 60 Hz simulation snapshots. Particles, hit flashes, screen shake, toast fading and tint timing are cosmetic; they do not consume the engine RNG. The HUD shows HP, wave, score, survival time and v1.0. The Active patches panel identifies the demo when loaded. Restart creates fresh per-mod VM state, and particle hooks compose alongside the sandbox host.
 
 ## Add to OBS
 
@@ -50,7 +51,7 @@ npm run lint
 npm run format
 ```
 
-The root test script runs every workspace. Empty stubs explicitly allow no tests; engine and overlay tests are required. TypeScript builds use strict mode, ESM and project references. Only the overlay includes DOM libraries; engine compilation has only the ES2022 library, with no DOM or ambient Node types. Overlay type-check output goes to `dist-types/`, separate from the Vite production bundle. No credentials are needed for Steps 1–2.
+The root test script runs every workspace. Empty stubs explicitly allow no tests; engine, mod-api and overlay tests are required. TypeScript builds use strict mode, ESM and project references. Only the overlay includes DOM libraries; engine compilation has only the ES2022 library, with no DOM or ambient Node types. Overlay type-check output goes to `dist-types/`, separate from the Vite production bundle. No credentials are needed for Steps 1–3.
 
 ## Engine
 
@@ -66,13 +67,13 @@ One `tick(intent)` advances 1/60 second. Movement components are normalized to l
 
 Waves start at tick 1, then 120 ticks after the last enemy is cleared or 600 ticks after the previous wave began, whichever comes first, with increasing counts and speed. The bot seeks the nearest pickup below 60% HP when no enemy is within 150 pixels of that path. `composeHosts(...hosts)` chains hooks in order; onHit damage flows through the chain and any cancellation wins. Enemies chase the player. Projectiles deal damage and expire after 120 ticks. Enemy deaths award points and can drop healing pickups. Hazards and enemies deal contact damage at most once per 30 ticks per attacker. Movement wraps when enabled; collisions use circle overlap at current arena coordinates. The uniform grid inserts all cells touched by each circle and deduplicates candidate pairs.
 
-## Future sandbox adapter boundary
+## Sandbox adapter boundary
 
-`ModHost` has the hook signatures from PLAN.md; the default host does nothing. It is an engine integration interface for the future sandbox adapter, **not a loader for untrusted JavaScript**. No mod source is executed in this step, and `packages/mod-api/api.d.ts` is not created yet.
+`ModHost` has the hook signatures from PLAN.md; the default host does nothing. Untrusted mod source runs exclusively in `SandboxHost` inside QuickJS, with separate 16 MB runtimes and cumulative 2 ms per-tick interrupt budgets. See [the sandbox notes](packages/mod-api/README.md) for usage, limits, fault handling and performance measurements. Interrupts are cooperative: large native builtins can overshoot the deadline before returning, so this is not a hard real-time guarantee.
 
 Initialization calls `onStart` before spawn notifications. Each live tick calls `onTick`, creates a scheduled wave and projectiles, integrates movement, resolves collisions (`onHit` before damage and `onKill` after death), then drains remaining spawn notifications. `onSpawn` receives detached entities. Hook-generated spawn chains are bounded at 1,000 notifications per drain.
 
-Game entity reads are detached and shared by entity ID within each hook invocation. After the hook returns, changes to known mutable fields are diffed into validated `setEntity` commands. This includes `g.player`, `enemies()`/`entities()` results, hook event arguments and `spawn()` return values. Unknown properties are ignored; ID and kind remain immutable. `g.set(entity, fields)` applies validated changes to the tracked copy, so subsequent reads and assignments in the same hook see them. Spawn commands run before mutation diffs; removed entities are not recreated by a diff. Invalid field batches are rejected. Copies retained beyond a hook invocation cannot change the world. Game spawn/remove/UI methods queue validated commands. Physics and arena changes are collected after each hook. `Game.state` is host-owned scratch data. Step 3 will marshal sandbox mutations into `Command[]` using the same boundary.
+Game entity reads are detached and shared by entity ID within each hook invocation. After the hook returns, changes to known mutable fields are diffed into validated `setEntity` commands. This includes `g.player`, `enemies()`/`entities()` results, hook event arguments and `spawn()` return values. Unknown properties are ignored; ID and kind remain immutable. `g.set(entity, fields)` applies validated changes to the tracked copy, so subsequent reads and assignments in the same hook see them. Spawn commands run before mutation diffs; removed entities are not recreated by a diff. Invalid field batches are rejected. Copies retained beyond a hook invocation cannot directly change the world. Game spawn/remove/UI methods queue validated commands. Physics and arena changes are collected after each hook. The sandbox keeps per-mod state private in each VM and marshals its mutations through these same engine methods.
 
 `applyCommands` accepts untrusted parsed data and returns an acceptance flag per command. Invalid commands are rejected atomically. At most 1,000 commands per batch and 300 entities are accepted; the player cannot be removed. IDs and kinds cannot be changed. UI events retain the newest 32 entries across ticks. Snapshots read them without consuming them; the overlay calls `world.drainEvents()` once per frame. Events submitted between ticks remain available until drained or displaced by the cap.
 
@@ -91,4 +92,4 @@ Game entity reads are detached and shared by entity ID within each hook invocati
 | toast                | 80 characters, control characters removed |
 | tint duration        | 0–10,000 milliseconds                     |
 
-NaN and infinities are rejected. Text length validation is not content moderation; chat intake and UI text moderation remain later PLAN.md work. The current overlay runs the base engine with no network integration, sandbox or patch pipeline.
+NaN and infinities are rejected. Text length validation is not content moderation; chat intake and UI text moderation remain later PLAN.md work. The current overlay can run the base engine or the sandboxed demo; Twitch, the independent harness CLI and the patch pipeline remain later steps.

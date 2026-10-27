@@ -1,4 +1,5 @@
 import { botIntent, composeHosts, World } from '@patch-notes-live/engine';
+import { SandboxHost, SPLIT_ON_HIT } from '@patch-notes-live/mod-api';
 import { Controls } from './controls.js';
 import { Effects, Feedback } from './effects.js';
 import { interpolateSnapshots, MAX_FRAME_SECONDS, planFrame } from './loop.js';
@@ -33,10 +34,22 @@ const finalTime = element('final-time'),
 element('seed-label').textContent = `SEED ${options.seed}`;
 const feedback = new Feedback(element('toasts'), element('tint'));
 let effects = new Effects();
+let sandbox: SandboxHost | undefined;
+const createSandbox = async () => {
+  sandbox?.dispose();
+  sandbox = options.mod ? await SandboxHost.create([SPLIT_ON_HIT]) : undefined;
+};
+await createSandbox();
+if (options.mod) {
+  element('patch-count').textContent = '1 / 3';
+  element('patch-title').textContent = 'Split on hit';
+  element('patch-description').textContent = 'Enemies break into two smaller enemies when shot.';
+  element('patch-mark').textContent = '[ ×2 ]';
+}
 const createWorld = () =>
   new World(
     options.seed,
-    composeHosts({
+    composeHosts(sandbox ?? {}, {
       onKill: (_g, { victim }) => {
         effects.kill(victim);
       },
@@ -66,18 +79,24 @@ function updateBot(): void {
   botLabel.textContent = bot ? 'On · Bot has the controls' : "Off · You're in control";
 }
 
-function restart(): void {
+async function restart(): Promise<void> {
   if (!current.gameOver) return;
+  if (restarting) return;
+  restarting = true;
   controls.reset();
   effects = new Effects();
   feedback.clear();
+  await createSandbox();
   world = createWorld();
   previous = current = world.snapshot();
   accumulator = 0;
   lastFrame = undefined;
   gameOver.hidden = true;
   canvas.focus({ preventScroll: true });
+  restarting = false;
 }
+
+let restarting = false;
 
 const controls = new Controls(canvas, { toggleBot, restart });
 botButton.addEventListener('click', toggleBot);
@@ -94,6 +113,7 @@ function resize(): void {
   canvas.height = Math.round(CANVAS_HEIGHT * dpr);
 }
 window.addEventListener('resize', resize);
+window.addEventListener('pagehide', () => sandbox?.dispose());
 document.addEventListener('visibilitychange', () => {
   lastFrame = undefined;
   accumulator = 0;
@@ -122,7 +142,7 @@ function updateHUD(): void {
 }
 
 function frame(now: number): void {
-  if (document.hidden) {
+  if (document.hidden || restarting) {
     lastFrame = undefined;
     requestAnimationFrame(frame);
     return;

@@ -32,5 +32,6 @@ export function readOptions(search: string) {
     seed: Number.isFinite(value) ? Math.trunc(value) >>> 0 : 1,
     bot: params.get('bot') === '1',
     obs: params.get('obs') === '1',
+    mod: params.get('mod') === 'split-on-hit' ? 'split-on-hit' : undefined,
   };
 }

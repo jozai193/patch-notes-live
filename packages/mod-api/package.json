@@ -6,6 +6,10 @@
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --disableConsoleIntercept"
+  },
+  "dependencies": {
+    "quickjs-emscripten": "^0.32.0",
+    "@patch-notes-live/engine": "0.0.0"
   }
 }
