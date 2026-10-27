@@ -1,6 +1,8 @@
 /** Mulberry32; state is exposed for deterministic snapshot comparisons. */
 export class Random {
-  constructor(public state: number) { this.state = state >>> 0; }
+  constructor(public state: number) {
+    this.state = state >>> 0;
+  }
   next(): number {
     this.state = (this.state + 0x6d2b79f5) >>> 0;
     let t = this.state;
