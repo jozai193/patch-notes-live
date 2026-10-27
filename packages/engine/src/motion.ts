@@ -2,6 +2,7 @@ import type { Entity, Physics, Vec } from './types.js';
 import { clamp } from './validation.js';
 
 export const ACCEL = 10;
+export const GRAVITY_TERMINAL_SPEED = 150;
 
 /** Keep accumulated gravity separate so steering does not cancel external acceleration. */
 export class Motion {
@@ -27,7 +28,11 @@ export class Motion {
         let controlled = entity[velocity] - drift[axis];
         controlled += (desired[axis] - controlled) * steering;
         controlled *= drag;
-        drift[axis] = (drift[axis] + physics.gravity[axis] * dt) * drag;
+        drift[axis] = clamp(
+          (drift[axis] + physics.gravity[axis] * dt) * drag,
+          -GRAVITY_TERMINAL_SPEED,
+          GRAVITY_TERMINAL_SPEED,
+        );
         entity[velocity] = clamp(controlled + drift[axis], -600, 600);
         // Account for the total velocity clamp without losing the controlled component.
         drift[axis] = entity[velocity] - controlled;

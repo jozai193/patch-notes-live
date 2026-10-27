@@ -10,8 +10,19 @@ describe('Step 1 review regressions', () => {
     for (let i = 0; i < 60; i++) w.tick(IDLE_INTENT);
     expect(w.snapshot().tick).toBe(60);
     expect(w.snapshot().player.y - start).toBeGreaterThanOrEqual(100);
-    expect(w.snapshot().player.y - start).toBeCloseTo(152.5);
-    expect(w.snapshot().player.vy).toBeCloseTo(300);
+    expect(w.snapshot().player.y - start).toBeCloseTo(113.75);
+    expect(w.snapshot().player.vy).toBeCloseTo(150);
+  });
+
+  it('can climb at least 40px against sustained gravity after 10 seconds at the floor', () => {
+    const w = new World(1, { onHit: () => ({ cancel: true }) });
+    w.applyCommands([{ type: 'setPhysics', physics: { gravity: { x: 0, y: 300 } } }]);
+    for (let i = 0; i < 600; i++) w.tick(IDLE_INTENT);
+    const floor = w.snapshot().player.y;
+    expect(floor).toBe(w.snapshot().arena.height - w.snapshot().player.radius);
+    for (let i = 0; i < 60; i++) w.tick({ ...IDLE_INTENT, moveY: -1 });
+    expect(w.snapshot().tick).toBe(660);
+    expect(floor - w.snapshot().player.y).toBeGreaterThanOrEqual(40);
   });
 
   it('steers player and enemies gradually; friction reduces both movement and gravity drift', () => {
