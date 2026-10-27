@@ -1,4 +1,4 @@
-import { botIntent, World } from '@patch-notes-live/engine';
+import { botIntent, composeHosts, World } from '@patch-notes-live/engine';
 import { Controls } from './controls.js';
 import { Effects, Feedback } from './effects.js';
 import { interpolateSnapshots, MAX_FRAME_SECONDS, planFrame } from './loop.js';
@@ -34,11 +34,14 @@ element('seed-label').textContent = `SEED ${options.seed}`;
 const feedback = new Feedback(element('toasts'), element('tint'));
 let effects = new Effects();
 const createWorld = () =>
-  new World(options.seed, {
-    onKill: (_g, { victim }) => {
-      effects.kill(victim);
-    },
-  });
+  new World(
+    options.seed,
+    composeHosts({
+      onKill: (_g, { victim }) => {
+        effects.kill(victim);
+      },
+    }),
+  );
 let world = createWorld();
 let previous = world.snapshot(),
   current = previous;

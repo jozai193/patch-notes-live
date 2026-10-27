@@ -49,6 +49,8 @@ export class World {
   private nextId = 1;
   private ticks = 0;
   private wave = 0;
+  private nextWaveAt = 1;
+  private clearedAt: number | undefined;
   private score = 0;
   private lastShot = -15;
   private readonly player: Entity;
@@ -254,11 +256,15 @@ export class World {
     e.hp = Math.min(e.hp, e.maxHp);
     this.bound(e);
     this.all.set(e.id, e);
+    if (kind === 'enemy') this.clearedAt = undefined;
     this.spawnEvents.push(cloneEntity(e));
     return e;
   }
   private remove(id: number): void {
+    const wasEnemy = this.all.get(id)?.kind === 'enemy';
     this.all.delete(id);
+    if (wasEnemy && ![...this.all.values()].some((e) => e.kind === 'enemy'))
+      this.clearedAt = this.ticks;
     this.expiry.delete(id);
     this.hitAt.delete(id);
     this.motion.reset(id);
@@ -287,8 +293,10 @@ export class World {
     this.invoke((g) => this.host.onTick?.(g, DT));
     this.flushSpawns();
     if (this.player.hp <= 0) return;
-    if ((this.ticks - 1) % 600 === 0) {
+    if (this.ticks >= Math.min(this.nextWaveAt, (this.clearedAt ?? Infinity) + 120)) {
       this.wave++;
+      this.nextWaveAt = this.ticks + 600;
+      this.clearedAt = undefined;
       for (let i = 0; i < 3 + this.wave * 2 && this.all.size < ENTITY_CAP; i++) {
         const side = Math.floor(this.rng.next() * 4),
           t = this.rng.next();
@@ -371,6 +379,8 @@ export class World {
       }
     }
     this.flushSpawns();
+    if (this.clearedAt === undefined && ![...this.all.values()].some((e) => e.kind === 'enemy'))
+      this.clearedAt = this.ticks;
   }
 
   private projectileHit(projectile: Entity, enemy: Entity): void {

@@ -7,6 +7,33 @@ export function botIntent(s: Snapshot): Intent {
     (a, b) => Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y) || a.id - b.id,
   );
   const nearest = enemies[0];
+  if (p.hp < p.maxHp * 0.6) {
+    const pickup = s.entities
+      .filter((e) => e.kind === 'pickup')
+      .sort(
+        (a, b) =>
+          Math.hypot(a.x - p.x, a.y - p.y) - Math.hypot(b.x - p.x, b.y - p.y) || a.id - b.id,
+      )[0];
+    if (pickup) {
+      const dx = pickup.x - p.x,
+        dy = pickup.y - p.y,
+        squared = dx * dx + dy * dy;
+      const unsafe = enemies.some((e) => {
+        const t = squared
+          ? Math.max(0, Math.min(1, ((e.x - p.x) * dx + (e.y - p.y) * dy) / squared))
+          : 0;
+        return Math.hypot(e.x - (p.x + t * dx), e.y - (p.y + t * dy)) <= 150;
+      });
+      if (!unsafe && squared > 0)
+        return {
+          moveX: dx / Math.sqrt(squared),
+          moveY: dy / Math.sqrt(squared),
+          aimX: nearest?.x ?? p.x + 1,
+          aimY: nearest?.y ?? p.y,
+          fire: !!nearest,
+        };
+    }
+  }
   let x = 0,
     y = 0;
   for (const e of enemies) {
