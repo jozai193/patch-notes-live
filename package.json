@@ -1,0 +1,22 @@
+{
+  "name": "patch-notes-live",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces",
+    "lint": "eslint .",
+    "build": "tsc -b"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.0",
+    "eslint": "^9.39.0",
+    "typescript-eslint": "^8.46.0"
+  }
+}

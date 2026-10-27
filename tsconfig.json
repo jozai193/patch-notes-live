@@ -1,0 +1,20 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/engine"
+    },
+    {
+      "path": "./packages/mod-api"
+    },
+    {
+      "path": "./packages/harness"
+    },
+    {
+      "path": "./packages/overlay"
+    },
+    {
+      "path": "./packages/server"
+    }
+  ]
+}
