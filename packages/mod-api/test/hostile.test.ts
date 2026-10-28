@@ -59,7 +59,7 @@ describe('hostile mods remain isolated through ticking and disposal', () => {
   it('never invokes a thrown object’s toJSON or message getter while reporting errors', async () => {
     const host = await SandboxHost.create([
       `export default {name:'error-object',description:'error transport',hooks:{
-      onTick(){throw {toJSON(){while(true){}},get message(){while(true){}}};}
+      onTick(){throw {toJSON(){while(true){}},get message(){while(true){}},get stack(){while(true){}}};}
     }}`,
     ]);
     try {

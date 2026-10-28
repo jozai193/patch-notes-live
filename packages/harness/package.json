@@ -6,6 +6,15 @@
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --disableConsoleIntercept",
+    "verify": "node verify.mjs"
+  },
+  "dependencies": {
+    "@patch-notes-live/engine": "0.0.0",
+    "@patch-notes-live/mod-api": "0.0.0",
+    "typescript": "~5.9.3"
+  },
+  "bin": {
+    "harness": "./verify.mjs"
   }
 }

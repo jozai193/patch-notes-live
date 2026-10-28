@@ -13,9 +13,11 @@
     "lint": "eslint .",
     "build": "tsc -b",
     "format": "prettier --write .",
-    "dev": "npm run dev -w @patch-notes-live/overlay"
+    "dev": "npm run dev -w @patch-notes-live/overlay",
+    "verify": "node packages/harness/verify.mjs"
   },
   "devDependencies": {
+    "@types/node": "^24.19.2",
     "eslint": "^9.39.0",
     "prettier": "^3.9.10",
     "typescript": "~5.9.3",

@@ -8,6 +8,8 @@ export interface Fault {
   kind: FaultKind;
   message: string;
   tick: number;
+  errorName?: string;
+  stack?: string;
 }
 export interface ModInfo {
   id: number;
@@ -34,6 +36,8 @@ export class SandboxFailure extends Error {
   constructor(
     readonly kind: FaultKind,
     message: string,
+    readonly errorName?: string,
+    readonly vmStack?: string,
   ) {
     super(message);
   }

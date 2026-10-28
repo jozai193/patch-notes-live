@@ -6,6 +6,7 @@ export const SHIM = String.raw`
   const parse = JSON.parse, stringify = JSON.stringify;
   const keys = Object.keys;
   const descriptor = Object.getOwnPropertyDescriptor;
+  const prototype = Object.getPrototypeOf;
   const create = Object.create;
   const message = error => {
     if (typeof error === 'string') return error.slice(0,512);
@@ -21,6 +22,15 @@ export const SHIM = String.raw`
       const result = create(null);
       result.ok = false;
       result.message = message(error);
+      // Only own data descriptors are transported; getters and toJSON are never invoked.
+      try {
+        const ownStack = descriptor(error, 'stack');
+        if (ownStack && typeof ownStack.value === 'string') result.stack = ownStack.value.slice(0,4096);
+        const ownName = descriptor(error,'name');
+        const parentName = descriptor(prototype(error),'name');
+        const name = ownName?.value ?? parentName?.value;
+        if (typeof name === 'string') result.errorName = name.slice(0,80);
+      } catch {}
       return stringify(result);
     }
   };

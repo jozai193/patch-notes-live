@@ -29,6 +29,7 @@ You are building **Patch Notes Live**, a Twitch-integrated browser game where vi
 - `npm run dev`: overlay (Vite); add the server alongside it once Step 8 exists
 - `npm run patch -- "<rule text>"`: generate a mod via Codex, once Step 6 exists
 - `npx tsc -b`: type-check everything
+- `npm run verify -- <file> [--json]`: headless verification; exit 0 pass, 1 failed mod, 2 harness error. The CLI also works by absolute path from other directories.
 
 ## The mod API is a contract
 

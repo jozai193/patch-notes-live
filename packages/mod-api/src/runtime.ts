@@ -169,7 +169,12 @@ export class ModRuntime {
         : /limit|invalid|synchronous|cannot remove/i.test(message)
           ? 'invalid-result'
           : 'throw';
-      throw new SandboxFailure(kind, message);
+      throw new SandboxFailure(
+        kind,
+        message,
+        typeof value.errorName === 'string' ? value.errorName.slice(0, 80) : undefined,
+        typeof value.stack === 'string' ? value.stack.slice(0, 4096) : undefined,
+      );
     }
     return value;
   }
@@ -251,6 +256,8 @@ export class ModRuntime {
       kind,
       message: message.slice(0, 512),
       tick: Math.max(0, this.info.tick),
+      ...(error instanceof SandboxFailure && error.errorName ? { errorName: error.errorName } : {}),
+      ...(error instanceof SandboxFailure && error.vmStack ? { stack: error.vmStack } : {}),
     });
     if (kind === 'emergency' || this.info.consecutiveFaults >= 3 || this.info.faultCount >= 10)
       this.disable(hook, kind === 'emergency' ? message : 'Fault threshold reached');

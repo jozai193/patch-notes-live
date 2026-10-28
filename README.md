@@ -1,6 +1,6 @@
 # Patch Notes Live
 
-Steps 1–3 implement the shared deterministic game core, a playable browser overlay and a QuickJS mod sandbox. The harness and server packages are workspace stubs. See [PLAN.md](PLAN.md) for the later build steps.
+Steps 1–5 implement the shared deterministic game core, playable overlay, QuickJS sandbox, headless verifier and sample mods. The server remains a workspace stub. See [PLAN.md](PLAN.md) for the later build steps.
 
 ## Play locally
 
@@ -50,9 +50,22 @@ npx tsc -b
 npm test
 npm run lint
 npm run format
+npm run verify -- mods/samples/split-on-hit.js
 ```
 
-The root test script runs every workspace. Empty stubs explicitly allow no tests; engine, mod-api and overlay tests are required. TypeScript builds use strict mode, ESM and project references. Only the overlay includes DOM libraries; engine compilation has only the ES2022 library, with no DOM or ambient Node types. Overlay type-check output goes to `dist-types/`, separate from the Vite production bundle. No credentials are needed for Steps 1–3.
+The root test script runs every workspace. The server stub explicitly allows no tests; engine, harness, mod-api and overlay tests are required. TypeScript builds use strict mode, ESM and project references. Only the overlay includes DOM libraries, and the harness has Node typings. Engine compilation has only the ES2022 library, with no DOM or ambient Node types. Overlay type-check output goes to `dist-types/`, separate from the Vite production bundle. No credentials are needed for Steps 1–5.
+
+## Verify a mod
+
+Run `npm run verify -- <file> [--json]`. Exit codes are 0 for pass, 1 for a failed mod and 2 for a harness/usage error. JSON goes to stdout and the readable summary to stderr; use `npm run --silent verify -- <file> --json` when parsing npm's output.
+
+The verifier checks load/size, three-seed stability, instruction budget, runaway entity accumulation, bot survival, observable effect against an identical-input baseline, and independent seed-1 replay determinism. Every run uses a fresh sandbox. See [harness usage and report semantics](packages/harness/README.md) and [the sample module catalog](mods/samples/README.md).
+
+From a future patch workspace outside the repository, run the CLI by absolute path; relative mod paths resolve in that workspace:
+
+```powershell
+node 'E:/Twitchcon hackathon/packages/harness/verify.mjs' ./mod.js --json
+```
 
 ## Engine
 
@@ -93,4 +106,4 @@ Game entity reads are detached and shared by entity ID within each hook invocati
 | toast                | 80 characters, control characters removed |
 | tint duration        | 0–10,000 milliseconds                     |
 
-NaN and infinities are rejected. Text length validation is not content moderation; chat intake and UI text moderation remain later PLAN.md work. The current overlay can run the base engine or the sandboxed demo; Twitch, the independent harness CLI and the patch pipeline remain later steps.
+NaN and infinities are rejected. Text length validation is not content moderation; chat intake and UI text moderation remain later PLAN.md work. The current overlay can run the base engine or the sandboxed demo. The verifier is implemented; Twitch and the Codex patch pipeline remain later steps.
