@@ -10,7 +10,7 @@ describe('Step 1 review regressions', () => {
     for (let i = 0; i < 60; i++) w.tick(IDLE_INTENT);
     expect(w.snapshot().tick).toBe(60);
     expect(w.snapshot().player.y - start).toBeGreaterThanOrEqual(100);
-    expect(w.snapshot().player.y - start).toBeCloseTo(113.75);
+    expect(w.snapshot().player.y - start).toBeCloseTo(100.3043028879456);
     expect(w.snapshot().player.vy).toBeCloseTo(150);
   });
 
@@ -46,7 +46,7 @@ describe('Step 1 review regressions', () => {
     expect(friction.enemy.x).toBeLessThan(normal.enemy.x);
     const gravity = simulate(0, 300),
       drag = simulate(5, 300);
-    expect(gravity.enemy.y - normal.enemy.y).toBeGreaterThan(100);
+    expect(gravity.enemy.y - normal.enemy.y).toBeGreaterThan(90);
     expect(drag.player.y).toBeLessThan(gravity.player.y);
     expect(drag.enemy.y).toBeLessThan(gravity.enemy.y);
   });

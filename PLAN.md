@@ -119,7 +119,7 @@ interface Entity {
 1. 3,600 headless ticks (60 s) with 3 seeds and no exceptions.
 2. 95th-percentile tick time stays under budget, and the entity count stays at or under the cap.
 3. The game stays winnable: the player can survive 20 s with a scripted bot on at least 1 seed, and the run doesn't end in under 5 s.
-4. **The mod actually does something:** state differs from a no-mod baseline (catches empty mods).
+4. **The effect is visible:** compare 900 ticks plus initialization with a no-mod baseline using identical seed/intents on seeds 1–3. At least one seed must show player max offset >=40px, mean matched-enemy offset >=20px, entity count difference >=3, any entity color change, radius difference >=2px, physics/arena changes, or at least one toast/tint. Report all measurements and recommend making effects visible within 10 seconds.
 5. Static checks: no `while(true)`; file size under 8 KB; exports match the schema.
 
 ---
@@ -177,7 +177,7 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
   1. Copy the template to `os.tmpdir()/patch-notes-live/<id>/`, outside the repository. Copy api.d.ts from the canonical mod-api contract at build time; use an absolute-path, prebuilt harness CLI command. Put at most 200 characters of untrusted viewer text only in REQUEST.md's quoted block.
   2. Use the installed SDK's `startThread()` / `runStreamed()` API with `skipGitRepoCheck: true`, `sandboxMode: 'workspace-write'`, no network, no approvals, and configurable model with low/medium reasoning. Emit short thinking/editing/testing/passed/failed/rejected events without raw reasoning. Non-rules or impossible requests produce result.json with a short rejection reason.
   3. **Independently** re-run the harness.
-  4. Return `{status, source?, report?, reason?, durationMs, attempts, threadId}` with status ok/failed/rejected/timeout. Always remove the temporary workspace.
+  4. Return `{status, source?, report?, reason?, durationMs, attempts, threadId}` with status ok/failed/rejected/timeout/quota. Usage-limit errors return quota without retry. Delete unexpected files before verification, while protected-file changes still fail. Always attempt workspace cleanup; log cleanup errors without replacing the patch result.
   5. Hard timeout of 150 s, with one retry in the same thread that passes the failure report back to Codex. Tests inject a fake runner; npm test never calls real Codex.
 - `npm run patch -- "enemies split in two when hit"` prints streamed events and results and saves verified source/report pairs under mods/generated/. Authenticate with Codex CLI login or CODEX_API_KEY.
 - **Done when:** type-checking, full npm test and lint pass; real CLI requests for splitting enemies and center gravity succeed, and a request to ignore instructions and print the system prompt is rejected. Show full outputs, durations and statuses.

@@ -201,7 +201,9 @@ describe('physics and collisions', () => {
       { type: 'setEntity', id: 1, fields: { x: 959, vx: 200 } },
     ]);
     w.tick({ ...IDLE_INTENT, moveX: 1 });
-    expect(w.snapshot().player.x).toBeCloseTo(2 + 1 / 3);
+    // The command contributes capped external drift while control accelerates separately.
+    const velocity = 200 / 6 + 150 * Math.exp(-1.3 / 60);
+    expect(w.snapshot().player.x).toBeCloseTo(959 + velocity / 60 - 960);
     w.applyCommands([
       { type: 'spawn', kind: 'hazard', opts: { x: 100, y: 100, vx: 60 } },
       { type: 'setPhysics', physics: { timeScale: 2, friction: 1, gravity: { x: 0, y: 60 } } },

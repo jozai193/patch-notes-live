@@ -1,6 +1,7 @@
 import { INSTRUCTION_BUDGET } from '@patch-notes-live/mod-api';
 import { literalLoops } from './static.js';
-import { run, TICKS } from './run.js';
+import { run, TICKS, EFFECT_TICKS } from './run.js';
+import { effectDetail, visible } from './effect.js';
 import { faultDetail } from './details.js';
 import type { Check, CheckId, Report, VerifyOptions } from './types.js';
 
@@ -29,20 +30,20 @@ export async function verify(source: string, options: VerifyOptions = {}): Promi
             ? `Source is ${bytes} bytes; the maximum is 8192 (8 KB). Fix: remove unused code and shorten the module to 8 KB or less.`
             : `Not run because the source exceeds 8 KB. Fix: reduce source size and rerun verification.`,
       })),
-      stats: { survivalSecondsBySeed: {}, maxEntities: 0, peakBudgetPct: 0, sandboxMsP95: 0 },
+      stats: {
+        survivalSecondsBySeed: {},
+        maxEntities: 0,
+        peakBudgetPct: 0,
+        sandboxMsP95: 0,
+        visibleEffectBySeed: {},
+      },
       durationMs: performance.now() - start,
     };
   }
   const loops = literalLoops(source);
   const first = await run(source, 1, options, undefined, true);
-  const second = await run(source, 2, options, undefined, first.effectAt === undefined);
-  const third = await run(
-    source,
-    3,
-    options,
-    undefined,
-    first.effectAt === undefined && second.effectAt === undefined,
-  );
+  const second = await run(source, 2, options, undefined, true);
+  const third = await run(source, 3, options, undefined, true);
   const repeated = await run(source, 1, options, first.intents);
   const primary = [first, second, third],
     all = [...primary, repeated];
@@ -54,7 +55,7 @@ export async function verify(source: string, options: VerifyOptions = {}): Promi
   const runaway = all.find((r) => r.maxCappedTicks > 300);
   const early = primary.find((r) => r.survival < 5);
   const survived = primary.some((r) => r.survival >= 20);
-  const effect = primary.find((r) => r.effectAt !== undefined);
+  const effect = primary.find((r) => visible(r.visibleEffect));
   const samples = all.flatMap((r) => r.samples).sort((a, b) => a - b);
   const checks: Check[] = [
     {
@@ -104,8 +105,8 @@ export async function verify(source: string, options: VerifyOptions = {}): Promi
       id: 'effect',
       ok: !!effect,
       detail: effect
-        ? `Seed ${effect.seed}: game snapshot differs from a no-mod baseline at tick ${effect.effectAt}, using the same seed and intents.`
-        : `No snapshot difference from the no-mod baseline by tick 600 on seeds 1, 2, or 3. Fix: change a real entity/physics/arena/UI property or spawn an entity; private g.state changes alone are not a game effect.`,
+        ? `Visible effect in ${EFFECT_TICKS} ticks with the same seed and intents. ${primary.map((r) => `Seed ${r.seed}: ${effectDetail(r.visibleEffect)}`).join('; ')}.`
+        : `No clearly visible effect in ${EFFECT_TICKS} ticks. ${primary.map((r) => `Seed ${r.seed}: ${effectDetail(r.visibleEffect)}`).join('; ')}. Fix: make the effect stronger and visible within 10 seconds: player offset >=40px, mean enemy offset >=20px, entity count difference >=3, any color change, radius difference >=2px, physics/arena changes, or at least one toast/tint. Private g.state or tiny velocity changes alone are insufficient.`,
     },
     {
       id: 'determinism',
@@ -124,6 +125,7 @@ export async function verify(source: string, options: VerifyOptions = {}): Promi
       maxEntities: Math.max(...all.map((r) => r.maxEntities)),
       peakBudgetPct,
       sandboxMsP95: samples.length ? samples[Math.ceil(samples.length * 0.95) - 1]! : 0,
+      visibleEffectBySeed: Object.fromEntries(primary.map((r) => [r.seed, r.visibleEffect])),
     },
     durationMs: performance.now() - start,
   };

@@ -70,13 +70,21 @@ export async function prepareWorkspace(request: string): Promise<{
           throw new Error('Codex changed a protected workspace file.');
       }
       for (const file of await readdir(path)) {
-        if (![...protectedFiles, 'mod.js', 'result.json'].includes(file))
-          throw new Error('Codex created an unexpected workspace file.');
+        if (![...protectedFiles, 'mod.js', 'result.json'].includes(file)) {
+          const target = resolve(path, file);
+          if (!isWithin(path, target)) throw new Error('Unsafe unexpected-file cleanup path.');
+          // fs.rm unlinks symlinks/junctions without traversing their targets.
+          await rm(target, { recursive: true, force: true, maxRetries: 3 });
+        }
       }
     };
     return { path, check, cleanup };
   } catch (error) {
-    await cleanup();
+    try {
+      await cleanup();
+    } catch (cleanupError) {
+      console.warn('Temporary patch workspace cleanup failed during setup.', cleanupError);
+    }
     throw error;
   }
 }

@@ -106,9 +106,9 @@ it('supports caller cancellation without reporting a mod as broken', async () =>
   ).rejects.toThrow();
 });
 
-it('does not certify an effect that first appears after tick 600', async () => {
+it('does not certify an effect that first appears after tick 900', async () => {
   const report = await verify(
-    `export default {name:'late',description:'late effect',hooks:{onTick(g){if(g.time>10)g.player.color='#aaaaaa';}}}`,
+    `export default {name:'late',description:'late effect',hooks:{onTick(g){if(g.time>15)g.player.color='#aaaaaa';}}}`,
   );
   expect(report.checks.find((c) => c.id === 'effect')).toMatchObject({ ok: false });
   expect(report.checks.find((c) => c.id === 'stability')).toMatchObject({ ok: true });

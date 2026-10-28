@@ -13,8 +13,20 @@ export interface Report {
     maxEntities: number;
     peakBudgetPct: number;
     sandboxMsP95: number;
+    visibleEffectBySeed: Record<number, VisibleEffect>;
   };
   durationMs: number;
+}
+export interface VisibleEffect {
+  playerMaxOffset: number;
+  meanEnemyOffset: number;
+  maxEntityCountDifference: number;
+  colorChanged: boolean;
+  maxRadiusDifference: number;
+  physicsChanged: boolean;
+  arenaChanged: boolean;
+  uiEvents: number;
+  ticksObserved: number;
 }
 export interface VerifyOptions {
   signal?: AbortSignal;

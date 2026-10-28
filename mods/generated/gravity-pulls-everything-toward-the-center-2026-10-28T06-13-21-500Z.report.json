@@ -29,12 +29,12 @@
     {
       "id": "effect",
       "ok": true,
-      "detail": "Seed 1: game snapshot differs from a no-mod baseline at tick 2, using the same seed and intents."
+      "detail": "Visible effect in 900 ticks with the same seed and intents. Seed 1: player max offset 0.03px, mean enemy offset 366.61px, count difference 8, radius difference 0.00px, color false, physics false, arena false, UI events 0; Seed 2: player max offset 0.23px, mean enemy offset 368.17px, count difference 9, radius difference 0.00px, color false, physics false, arena false, UI events 0; Seed 3: player max offset 4.09px, mean enemy offset 286.57px, count difference 7, radius difference 0.00px, color false, physics false, arena false, UI events 0."
     },
     {
       "id": "determinism",
       "ok": true,
-      "detail": "Independent seed-1 runs match: SHA-256 7f4c5110dd60347c0e6c58d3b629701c4da0908ef9a5153fbf444ac2cae48e95."
+      "detail": "Independent seed-1 runs match: SHA-256 38446c7d10b2bee62283aed385db34bb3ec150fccb9d8859daaf915c8c3a134a."
     }
   ],
   "stats": {
@@ -43,9 +43,44 @@
       "2": 60,
       "3": 60
     },
-    "maxEntities": 29,
+    "maxEntities": 30,
     "peakBudgetPct": 1.5625,
-    "sandboxMsP95": 1.1759999999922002
+    "sandboxMsP95": 0.6258000000000266,
+    "visibleEffectBySeed": {
+      "1": {
+        "playerMaxOffset": 0.02728396196574234,
+        "meanEnemyOffset": 366.60888823535,
+        "maxEntityCountDifference": 8,
+        "colorChanged": false,
+        "maxRadiusDifference": 0,
+        "physicsChanged": false,
+        "arenaChanged": false,
+        "uiEvents": 0,
+        "ticksObserved": 900
+      },
+      "2": {
+        "playerMaxOffset": 0.2269690198751508,
+        "meanEnemyOffset": 368.16965383217894,
+        "maxEntityCountDifference": 9,
+        "colorChanged": false,
+        "maxRadiusDifference": 0,
+        "physicsChanged": false,
+        "arenaChanged": false,
+        "uiEvents": 0,
+        "ticksObserved": 900
+      },
+      "3": {
+        "playerMaxOffset": 4.094487245916392,
+        "meanEnemyOffset": 286.57302139104075,
+        "maxEntityCountDifference": 7,
+        "colorChanged": false,
+        "maxRadiusDifference": 0,
+        "physicsChanged": false,
+        "arenaChanged": false,
+        "uiEvents": 0,
+        "ticksObserved": 900
+      }
+    }
   },
-  "durationMs": 9155.7411
+  "durationMs": 5602.8532000000005
 }

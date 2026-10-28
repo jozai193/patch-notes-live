@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { access, readFile, writeFile, rm, symlink } from 'node:fs/promises';
+import { access, readFile, writeFile, rm, symlink, mkdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -7,6 +8,7 @@ import { createPatch } from '../src/patch/createPatch.js';
 import { compileEvent, codexRunner } from '../src/patch/runner.js';
 import { buildTemplate, isWithin, repoRoot, requestHeader } from '../src/patch/workspace.js';
 import type { RunnerFactory } from '../src/patch/types.js';
+import * as workspaces from '../src/patch/workspace.js';
 
 // Every pipeline test supplies a fake. A forgotten injection must never spend real Codex calls.
 vi.mock('@openai/codex-sdk', () => ({
@@ -19,6 +21,7 @@ const good = await readFile(resolve(repoRoot, 'mods/samples/enemies-tiny-and-fas
 const bad = await readFile(resolve(repoRoot, 'mods/samples/does-nothing.js'), 'utf8');
 const paths: string[] = [];
 afterEach(async () => {
+  vi.restoreAllMocks();
   for (const path of paths.splice(0)) await expect(access(path)).rejects.toThrow();
 });
 
@@ -41,6 +44,69 @@ function fake(
 }
 
 describe('isolated runtime patch pipeline (fake Codex only)', () => {
+  it.each([
+    'You have hit your usage limit. Try again later.',
+    'UsageLimitExceeded',
+    'insufficient_quota',
+  ])('returns quota with no retry for %s', async (message) => {
+    const { runner, prompts } = fake(async () => {
+      throw new Error(message);
+    });
+    const phases: string[] = [];
+    const result = await createPatch('tiny enemies', {
+      runner,
+      onEvent: (event) => phases.push(event.phase),
+    });
+    expect(result).toMatchObject({ status: 'quota', attempts: 1, reason: message });
+    expect(result.report).toBeUndefined();
+    expect(prompts).toHaveLength(1);
+    expect(phases).toContain('quota');
+  });
+
+  it('deletes unexpected files and directories before independent verification', async () => {
+    let directory = '';
+    const { runner } = fake(async (workspace) => {
+      directory = workspace;
+      await writeFile(join(workspace, 'mod.js'), good);
+      await writeFile(join(workspace, 'notes.txt'), 'extra notes');
+      await mkdir(join(workspace, 'scratch'));
+      await writeFile(join(workspace, 'scratch/debug.txt'), 'extra file');
+    });
+    let removed: boolean[] = [];
+    const result = await createPatch('tiny enemies', {
+      runner,
+      onEvent(event) {
+        if (event.text.startsWith('Independently verifying')) {
+          removed = ['notes.txt', 'scratch'].map((file) => !existsSync(join(directory, file)));
+        }
+      },
+    });
+    expect(removed).toEqual([true, true]);
+    expect(result.status).toBe('ok');
+  });
+
+  it('logs a cleanup error without replacing a verified ok result', async () => {
+    const prepare = workspaces.prepareWorkspace;
+    vi.spyOn(workspaces, 'prepareWorkspace').mockImplementation(async (request) => {
+      const workspace = await prepare(request);
+      return {
+        ...workspace,
+        cleanup: async () => {
+          await workspace.cleanup();
+          throw new Error('EBUSY');
+        },
+      };
+    });
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { runner } = fake(async (workspace) => {
+      await writeFile(join(workspace, 'mod.js'), good);
+    });
+    expect(await createPatch('tiny enemies', { runner })).toMatchObject({
+      status: 'ok',
+      report: { ok: true },
+    });
+    expect(warning).toHaveBeenCalledWith(expect.stringContaining('EBUSY'));
+  });
   it('independently passes a real good mod, emits passed, and cleans up', async () => {
     const { runner } = fake(async (workspace) => {
       expect(isWithin(repoRoot, workspace)).toBe(false);

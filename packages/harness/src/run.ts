@@ -5,9 +5,11 @@ import type { Intent, Snapshot } from '@patch-notes-live/engine';
 import { SandboxHost } from '@patch-notes-live/mod-api';
 import type { Fault } from '@patch-notes-live/mod-api';
 import type { VerifyOptions } from './types.js';
+import type { VisibleEffect } from './types.js';
+import { EffectTracker } from './effect.js';
 
 export const TICKS = 3600;
-export const EFFECT_TICKS = 600;
+export const EFFECT_TICKS = 900;
 export interface Run {
   seed: number;
   hash: string;
@@ -21,7 +23,7 @@ export interface Run {
   budgetFault: Fault | undefined;
   loaded: boolean;
   disabled: boolean;
-  effectAt: number | undefined;
+  visibleEffect: VisibleEffect;
 }
 
 export async function run(
@@ -34,6 +36,7 @@ export async function run(
   options.signal?.throwIfAborted();
   const host = await SandboxHost.create([source]);
   const loaded = !host.faults.some((f) => f.hook === 'load');
+  const effect = new EffectTracker();
   let snapshot: Snapshot;
   const result: Run = {
     seed,
@@ -48,7 +51,7 @@ export async function run(
     budgetFault: undefined,
     loaded,
     disabled: false,
-    effectAt: undefined,
+    visibleEffect: effect.metrics,
   };
   try {
     const world = new World(seed, host);
@@ -57,10 +60,8 @@ export async function run(
     result.maxPolls = host.mods[0]!.maxInterruptsPerTick;
     result.disabled = host.mods[0]!.disabled;
     result.maxEntities = snapshot.entities.length;
-    if (baseline && JSON.stringify(snapshot) !== JSON.stringify(baseline.snapshot())) {
-      result.effectAt = 0;
-      baseline = undefined;
-    }
+    const initialEvents = world.drainEvents().length;
+    if (baseline) effect.observe(snapshot, baseline.snapshot(), initialEvents, 0);
     let cappedTicks = 0;
     for (let i = 0; i < TICKS; i++) {
       const intent = replay?.[i] ?? botIntent(snapshot);
@@ -68,6 +69,7 @@ export async function run(
       const alive = !snapshot.gameOver;
       world.tick(intent);
       snapshot = world.snapshot();
+      const uiEvents = world.drainEvents().length;
       if (alive) {
         const mod = host.mods[0]!;
         result.samples.push(mod.timeThisTickMs);
@@ -83,10 +85,8 @@ export async function run(
       }
       if (baseline && i < EFFECT_TICKS) {
         baseline.tick(intent);
-        if (JSON.stringify(snapshot) !== JSON.stringify(baseline.snapshot())) {
-          result.effectAt = i + 1;
-          baseline = undefined;
-        }
+        effect.observe(snapshot, baseline.snapshot(), uiEvents, i + 1);
+        if (i + 1 === EFFECT_TICKS) baseline = undefined;
       }
       if ((i + 1) % 600 === 0) {
         options.signal?.throwIfAborted();

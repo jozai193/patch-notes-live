@@ -186,9 +186,10 @@ export class World {
         const e = finite(cmd.id) ? this.all.get(cmd.id) : undefined,
           safe = fields(cmd.fields);
         if (!e || !safe) return false;
-        Object.assign(e, safe);
-        if (safe.vx !== undefined) this.motion.reset(e.id, 'x');
-        if (safe.vy !== undefined) this.motion.reset(e.id, 'y');
+        const { vx, vy, ...properties } = safe;
+        Object.assign(e, properties);
+        if (vx !== undefined) this.motion.setVelocity(e, 'x', vx);
+        if (vy !== undefined) this.motion.setVelocity(e, 'y', vy);
         e.hp = Math.min(e.hp, e.maxHp);
         this.bound(e);
         return true;

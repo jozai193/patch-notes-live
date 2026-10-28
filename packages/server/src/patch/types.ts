@@ -2,7 +2,7 @@ import type { ThreadEvent } from '@openai/codex-sdk';
 import type { Report } from '@patch-notes-live/harness';
 
 export interface CompileEvent {
-  phase: 'thinking' | 'editing' | 'testing' | 'passed' | 'failed' | 'rejected';
+  phase: 'thinking' | 'editing' | 'testing' | 'passed' | 'failed' | 'rejected' | 'quota';
   text: string;
 }
 
@@ -24,7 +24,7 @@ export interface PatchOptions {
 }
 
 export interface PatchResult {
-  status: 'ok' | 'failed' | 'rejected' | 'timeout';
+  status: 'ok' | 'failed' | 'rejected' | 'timeout' | 'quota';
   source?: string;
   report?: Report;
   reason?: string;

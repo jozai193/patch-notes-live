@@ -29,7 +29,7 @@
     {
       "id": "effect",
       "ok": true,
-      "detail": "Seed 1: game snapshot differs from a no-mod baseline at tick 41, using the same seed and intents."
+      "detail": "Visible effect in 900 ticks with the same seed and intents. Seed 1: player max offset 0.00px, mean enemy offset 0.00px, count difference 16, radius difference 0.00px, color false, physics false, arena false, UI events 0; Seed 2: player max offset 0.60px, mean enemy offset 0.00px, count difference 15, radius difference 0.00px, color false, physics false, arena false, UI events 0; Seed 3: player max offset 0.00px, mean enemy offset 0.00px, count difference 8, radius difference 0.00px, color false, physics false, arena false, UI events 0."
     },
     {
       "id": "determinism",
@@ -45,7 +45,42 @@
     },
     "maxEntities": 54,
     "peakBudgetPct": 1.5625,
-    "sandboxMsP95": 0.11220000000321306
+    "sandboxMsP95": 0.08249999999998181,
+    "visibleEffectBySeed": {
+      "1": {
+        "playerMaxOffset": 0,
+        "meanEnemyOffset": 0,
+        "maxEntityCountDifference": 16,
+        "colorChanged": false,
+        "maxRadiusDifference": 0,
+        "physicsChanged": false,
+        "arenaChanged": false,
+        "uiEvents": 0,
+        "ticksObserved": 900
+      },
+      "2": {
+        "playerMaxOffset": 0.6036027278815804,
+        "meanEnemyOffset": 0,
+        "maxEntityCountDifference": 15,
+        "colorChanged": false,
+        "maxRadiusDifference": 0,
+        "physicsChanged": false,
+        "arenaChanged": false,
+        "uiEvents": 0,
+        "ticksObserved": 900
+      },
+      "3": {
+        "playerMaxOffset": 0,
+        "meanEnemyOffset": 0,
+        "maxEntityCountDifference": 8,
+        "colorChanged": false,
+        "maxRadiusDifference": 0,
+        "physicsChanged": false,
+        "arenaChanged": false,
+        "uiEvents": 0,
+        "ticksObserved": 900
+      }
+    }
   },
-  "durationMs": 905.5824999999968
+  "durationMs": 544.2953
 }

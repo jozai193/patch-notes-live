@@ -1,2 +1,2 @@
 export { verify } from './verify.js';
-export type { Report, Check, CheckId, VerifyOptions } from './types.js';
+export type { Report, Check, CheckId, VerifyOptions, VisibleEffect } from './types.js';
