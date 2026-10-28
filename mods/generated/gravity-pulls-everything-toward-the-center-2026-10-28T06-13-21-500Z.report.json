@@ -1,0 +1,51 @@
+{
+  "ok": true,
+  "checks": [
+    {
+      "id": "load",
+      "ok": true,
+      "detail": "Valid ES-module export; 751/8192 bytes; no literal while(true)."
+    },
+    {
+      "id": "stability",
+      "ok": true,
+      "detail": "Seeds 1, 2, 3 completed 3600 tick attempts each, plus an independent seed-1 replay, with zero faults and no disabled mod."
+    },
+    {
+      "id": "budget",
+      "ok": true,
+      "detail": "Peak 1/64 polls (1.56%); no instruction-budget interrupts."
+    },
+    {
+      "id": "runaway",
+      "ok": true,
+      "detail": "Longest consecutive time at the 300-entity cap: 0.00 s (maximum 5)."
+    },
+    {
+      "id": "winnable",
+      "ok": true,
+      "detail": "Bot survived at least 20 s on a seed; all seed survival times: 1: 60.00s, 2: 60.00s, 3: 60.00s. No run ended under 5 s."
+    },
+    {
+      "id": "effect",
+      "ok": true,
+      "detail": "Seed 1: game snapshot differs from a no-mod baseline at tick 2, using the same seed and intents."
+    },
+    {
+      "id": "determinism",
+      "ok": true,
+      "detail": "Independent seed-1 runs match: SHA-256 7f4c5110dd60347c0e6c58d3b629701c4da0908ef9a5153fbf444ac2cae48e95."
+    }
+  ],
+  "stats": {
+    "survivalSecondsBySeed": {
+      "1": 60,
+      "2": 60,
+      "3": 60
+    },
+    "maxEntities": 29,
+    "peakBudgetPct": 1.5625,
+    "sandboxMsP95": 1.1759999999922002
+  },
+  "durationMs": 9155.7411
+}

@@ -41,7 +41,7 @@ You are building **Patch Notes Live**, a Twitch-integrated browser game where vi
 
 - Never commit `.env`, tokens, or keys. Keep `.env.example` up to date with placeholder values.
 - Treat all chat text as untrusted input: moderate it before display or use, length-limit it, and never interpolate it into shell commands.
-- The runtime patch pipeline runs Codex with `--sandbox workspace-write` confined to `patches/<id>/`. Never give it access to the repo root.
+- The runtime patch pipeline runs Codex with `--sandbox workspace-write` in `os.tmpdir()/patch-notes-live/<id>/`, outside this repository, with network disabled and approvals forbidden. Never add the repo root as a writable directory. The temporary workspace uses only its own AGENTS.md; its absolute-path harness command reads prebuilt trusted code.
 
 ## Out of scope unless asked
 

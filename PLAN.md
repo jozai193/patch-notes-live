@@ -26,7 +26,7 @@
                               │                 │                                │
                               │                 ▼                                │
                               │  patch pipeline: Codex SDK thread in             │
-                              │  patches/<id>/ (template + API types + tests)    │
+                              │  OS temp workspace (template + API + tests)    │
                               │                 │                                │
                               │                 ▼                                │
                               │  independent re-verify (headless harness)        │
@@ -173,14 +173,14 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
 ### Step 6: Codex patch pipeline as a CLI (Day 2)
 
 - `mod-template/`: `AGENTS.md` (rules: edit only `mod.js`, use only `api.d.ts`, run `npm test` until it passes, keep it under 8 KB, don't touch the tests), `api.d.ts`, the `mod.js` stub, and `package.json` with `test` calling the harness.
-- `server/patch.ts`: `createPatch(request)`:
-  1. Copy the template to `patches/<id>/`.
-  2. Run a Codex SDK thread there with `runStreamed`, emitting events (`thinking`, `editing mod.js`, `running tests`, `tests passed`).
+- `server/src/patch/createPatch.ts`: `createPatch(request, { onEvent, signal, timeoutMs })`:
+  1. Copy the template to `os.tmpdir()/patch-notes-live/<id>/`, outside the repository. Copy api.d.ts from the canonical mod-api contract at build time; use an absolute-path, prebuilt harness CLI command. Put at most 200 characters of untrusted viewer text only in REQUEST.md's quoted block.
+  2. Use the installed SDK's `startThread()` / `runStreamed()` API with `skipGitRepoCheck: true`, `sandboxMode: 'workspace-write'`, no network, no approvals, and configurable model with low/medium reasoning. Emit short thinking/editing/testing/passed/failed/rejected events without raw reasoning. Non-rules or impossible requests produce result.json with a short rejection reason.
   3. **Independently** re-run the harness.
-  4. Return `{ok, modSource, report, durationMs}`.
-  5. Hard timeout of 150 s, with one retry that passes the failure report back to Codex.
-- `npm run patch -- "enemies split in two when hit"` prints the streamed events and the result.
-- **Done when:** this works from start to finish for 3 requests.
+  4. Return `{status, source?, report?, reason?, durationMs, attempts, threadId}` with status ok/failed/rejected/timeout. Always remove the temporary workspace.
+  5. Hard timeout of 150 s, with one retry in the same thread that passes the failure report back to Codex. Tests inject a fake runner; npm test never calls real Codex.
+- `npm run patch -- "enemies split in two when hit"` prints streamed events and results and saves verified source/report pairs under mods/generated/. Authenticate with Codex CLI login or CODEX_API_KEY.
+- **Done when:** type-checking, full npm test and lint pass; real CLI requests for splitting enemies and center gravity succeed, and a request to ignore instructions and print the system prompt is rejected. Show full outputs, durations and statuses.
 
 ### Step 7: GO/NO-GO benchmark (end of Day 2, decides the project)
 

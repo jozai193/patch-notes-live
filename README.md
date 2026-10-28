@@ -1,6 +1,6 @@
 # Patch Notes Live
 
-Steps 1–5 implement the shared deterministic game core, playable overlay, QuickJS sandbox, headless verifier and sample mods. The server remains a workspace stub. See [PLAN.md](PLAN.md) for the later build steps.
+Steps 1–6 implement the shared deterministic game core, playable overlay, QuickJS sandbox, headless verifier, sample mods and runtime Codex patch CLI. See [PLAN.md](PLAN.md) for the later build steps.
 
 ## Play locally
 
@@ -53,7 +53,7 @@ npm run format
 npm run verify -- mods/samples/split-on-hit.js
 ```
 
-The root test script runs every workspace. The server stub explicitly allows no tests; engine, harness, mod-api and overlay tests are required. TypeScript builds use strict mode, ESM and project references. Only the overlay includes DOM libraries, and the harness has Node typings. Engine compilation has only the ES2022 library, with no DOM or ambient Node types. Overlay type-check output goes to `dist-types/`, separate from the Vite production bundle. No credentials are needed for Steps 1–5.
+The root test script runs every workspace. Server pipeline tests inject a fake Codex runner and run the real independent verifier; npm test never invokes real Codex or needs credentials. TypeScript builds use strict mode, ESM and project references. Only the overlay includes DOM libraries; the harness and server have Node typings. Engine compilation has only the ES2022 library, with no DOM or ambient Node types. Overlay type-check output goes to `dist-types/`, separate from the Vite production bundle. No credentials are needed for Steps 1–5.
 
 ## Verify a mod
 
@@ -61,11 +61,29 @@ Run `npm run verify -- <file> [--json]`. Exit codes are 0 for pass, 1 for a fail
 
 The verifier checks load/size, three-seed stability, instruction budget, runaway entity accumulation, bot survival, observable effect against an identical-input baseline, and independent seed-1 replay determinism. Every run uses a fresh sandbox. See [harness usage and report semantics](packages/harness/README.md) and [the sample module catalog](mods/samples/README.md).
 
-From a future patch workspace outside the repository, run the CLI by absolute path; relative mod paths resolve in that workspace:
+From a patch workspace outside the repository, run the CLI by absolute path; relative mod paths resolve in that workspace:
 
 ```powershell
 node 'E:/Twitchcon hackathon/packages/harness/verify.mjs' ./mod.js --json
 ```
+
+## Generate a runtime patch (Step 6)
+
+Authenticate once with `codex login` (Codex CLI), or provide `CODEX_API_KEY` in your environment or the ignored root `.env` file. No Twitch or embeddings key is needed. The SDK uses its bundled CLI; its installed TypeScript definitions are authoritative. Optional `.env` settings `PATCH_CODEX_MODEL` and `PATCH_CODEX_REASONING=low` select a model and low/medium reasoning; leaving the model empty uses your Codex configuration.
+
+```sh
+npm run patch -- "enemies split in two when hit"
+```
+
+The command builds trusted server/harness code and copies the canonical `packages/mod-api/api.d.ts` into the generated template API file. `npm run build` also prepares that copy; it is ignored by Git rather than maintained separately. Each patch gets a fresh temporary directory at `os.tmpdir()/patch-notes-live/patch-<id>`, outside the repository, so the developer AGENTS.md is not inherited. Its package.json test command contains absolute Node and harness paths; the prebuilt `verify-built.mjs` entry point reads trusted code without rebuilding outside the sandbox.
+
+Viewer text is normalized, capped at 200 Unicode characters, and written only as quoted data in REQUEST.md. The SDK receives a fixed instruction to read it, with workspace-write sandboxing, networking and web search disabled, and approvals forbidden. No repository directory is added as writable. Protected template files are checked after each turn. The model may edit mod.js or write result.json to reject a non-rule/impossible request.
+
+Compile-feed messages describe phases without forwarding raw reasoning, commands or model output. A separate in-process `verify()` checks the actual source. A failed report gets one retry in the same thread within a 150-second total timeout. Cancellation and timeout abort the runner; the temporary workspace is removed on every outcome. Status is `ok`, `failed`, `rejected`, or `timeout`, with attempts, thread ID, independent report and duration. Exit codes: 0 success, 1 failed/rejected, 124 timeout, 2 CLI/setup error.
+
+Verified mods and matching `.report.json` files are saved in `mods/generated/<slug>-<timestamp>.*`. They are source strings for the QuickJS sandbox; do not import or execute them in Node. Step 6 does not load them into the overlay; hot swapping comes in Step 8.
+
+See [the recorded Step 6 validation](docs/step-6-validation.md) for full command outputs, real request statuses and durations.
 
 ## Engine
 
@@ -106,4 +124,4 @@ Game entity reads are detached and shared by entity ID within each hook invocati
 | toast                | 80 characters, control characters removed |
 | tint duration        | 0–10,000 milliseconds                     |
 
-NaN and infinities are rejected. Text length validation is not content moderation; chat intake and UI text moderation remain later PLAN.md work. The current overlay can run the base engine or the sandboxed demo. The verifier is implemented; Twitch and the Codex patch pipeline remain later steps.
+NaN and infinities are rejected. Text length validation is not content moderation; chat intake and UI text moderation remain later PLAN.md work. The current overlay can run the base engine or the sandboxed demo. The verifier and Codex patch CLI are implemented; Twitch integration remains a later step.

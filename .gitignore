@@ -1,4 +1,5 @@
 node_modules/
+mod-template/api.d.ts
 dist/
 .env
 .env.*

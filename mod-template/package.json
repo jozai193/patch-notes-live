@@ -1,0 +1,8 @@
+{
+  "name": "patch-workspace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "__ABSOLUTE_HARNESS_COMMAND__"
+  }
+}

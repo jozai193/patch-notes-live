@@ -3,6 +3,7 @@ node_modules/
 *.tsbuildinfo
 coverage/
 package-lock.json
+mods/generated/
 **/dist-types/
 .playwright-cli/
 output/playwright/
