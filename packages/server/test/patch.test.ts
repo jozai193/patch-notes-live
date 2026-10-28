@@ -155,7 +155,7 @@ describe('isolated runtime patch pipeline (fake Codex only)', () => {
     const result = await createPatch('do something', { runner });
     expect(result).toMatchObject({ status: 'failed', attempts: 2, report: { ok: false } });
     expect(result.reason).toContain('effect:');
-    expect(result.source).toBeUndefined();
+    expect(result.source).toBe(bad);
   });
 
   it('hard-times-out a stuck runner, aborts its signal, and removes the workspace', async () => {

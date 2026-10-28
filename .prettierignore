@@ -4,6 +4,7 @@ node_modules/
 coverage/
 package-lock.json
 mods/generated/
+bench-results/
 **/dist-types/
 .playwright-cli/
 output/playwright/

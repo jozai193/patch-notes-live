@@ -7,6 +7,7 @@ export default tseslint.config(
       '**/node_modules/**',
       '.playwright-cli/**',
       'output/playwright/**',
+      'bench-results/**',
     ],
   },
   ...tseslint.configs.recommended,

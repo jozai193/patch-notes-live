@@ -184,7 +184,10 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
 
 ### Step 7: GO/NO-GO benchmark (end of Day 2, decides the project)
 
-- `scripts/bench.ts`: runs 20 varied, realistic requests and records pass rate, median and p90 duration.
+- `scripts/bench.mjs`, launched with `npm run bench -- [--only 0-5] [--concurrency 2]`: runs the exact 20 cases in `packages/server/src/bench/cases.ts`, with expected rejection for cases 5 and 19. Defaults to concurrency 2; supports ascending index ranges and comma-separated selections.
+- Save generated sources, independent reports, full compile-feed output and summary.json under gitignored `bench-results/<timestamp>/`. Record status, expected-status match, duration, attempts, first failed check and per-seed visible-effect measurements. Failed verification results retain their source for diagnosis.
+- Stop immediately on quota: abort active siblings, schedule no more cases, persist the partial summary and exit 75. Exclude quota/cancelled cases from completed quality and latency statistics and explicitly mark the benchmark incomplete.
+- Print game-rule pass rate, correct/false rejections, false acceptances, median/p90 duration and retries used. Start with cases 0–5; continue with 6–19 only if at least four of the first six match and no quota occurred. Keep Step 8 out of scope.
 - **Go:** pass rate of at least 70% and p90 of 150 s or less.
 - **Adjust:** narrow the API, add more examples to `AGENTS.md`, use a smaller and faster model setting, or pre-generate during the vote.
 - **No-go** (pass rate under 50%): switch to the fallback idea (Border War) with 4 days left.

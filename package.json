@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "dev": "npm run dev -w @patch-notes-live/overlay",
     "verify": "node packages/harness/verify.mjs",
-    "patch": "node packages/server/patch.mjs"
+    "patch": "node packages/server/patch.mjs",
+    "bench": "node scripts/bench.mjs"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

@@ -1,6 +1,6 @@
 # Patch Notes Live
 
-Steps 1–6 implement the shared deterministic game core, playable overlay, QuickJS sandbox, headless verifier, sample mods and runtime Codex patch CLI. See [PLAN.md](PLAN.md) for the later build steps.
+Steps 1–7 implement the shared deterministic game core, playable overlay, QuickJS sandbox, headless verifier, sample mods, runtime Codex patch CLI and benchmark. See [PLAN.md](PLAN.md) for the later build steps.
 
 ## Play locally
 
@@ -84,6 +84,21 @@ Compile-feed messages describe phases without forwarding raw reasoning, commands
 Verified mods and matching `.report.json` files are saved in `mods/generated/<slug>-<timestamp>.*`. They are source strings for the QuickJS sandbox; do not import or execute them in Node. Step 6 does not load them into the overlay; hot swapping comes in Step 8.
 
 See [the recorded Step 6 validation](docs/step-6-validation.md) for full command outputs, real request statuses and durations.
+
+## Benchmark generated patches (Step 7)
+
+Use the same Codex authentication and model settings as the patch CLI:
+
+```sh
+npm run bench -- --only 0-5
+npm run bench -- --only 6-19 --concurrency 2
+```
+
+The fixed catalog has exactly 20 cases; cases 5 and 19 must be rejected. With no `--only`, the command selects all 20. Concurrency defaults to 2; indices, ascending ranges and comma-separated selections are accepted. Follow the staged gate: run cases 0–5 first and run 6–19 only if at least four match their expected statuses. A quota result stops the whole benchmark immediately, aborts active siblings and prevents any further cases from starting.
+
+Each invocation creates `bench-results/<timestamp>/` (ignored by Git, lint and formatting) with source files, full independent `.report.json` files, `output.log` and an incrementally saved `summary.json`. Failed verifications retain their source for diagnosis; rejected/cancelled runs may have no source. Per-case records include status, expected-status match, duration, attempts, first failed check, per-seed visible-effect measurements, reason and thread ID. Stored source strings are never imported or executed in Node.
+
+The summary reports game-rule pass rate, correct rejections, false rejections/acceptances, median/p90 duration and retries used. Median/p90 include all completed rule and rejection cases; p90 uses nearest rank. Quota and cancelled siblings are excluded from completed quality/latency measurements, with unstarted cases listed explicitly. Retries count all second attempts used. A quota-stopped run is incomplete and cannot establish GO/NO-GO. Exit codes: 0 all expected statuses matched, 1 a mismatch, 75 quota, 130 user cancellation, 2 setup/infrastructure error. Benchmark tests use fakes and never invoke real Codex.
 
 ## Engine
 

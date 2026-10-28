@@ -109,6 +109,7 @@ export async function createPatch(
       }
       outcome = {
         status: 'failed',
+        source,
         report,
         reason: report.checks
           .filter((check) => !check.ok)

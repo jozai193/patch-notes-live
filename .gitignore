@@ -5,6 +5,7 @@ dist/
 .env.*
 !.env.example
 patches/
+bench-results/
 *.log
 .vite/
 coverage/
