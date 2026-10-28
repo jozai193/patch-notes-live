@@ -4,7 +4,12 @@ export const CANVAS_WIDTH = 840;
 export const CANVAS_HEIGHT = 560;
 
 export function arenaView(arena: Arena) {
-  const scale = Math.min(CANVAS_WIDTH / arena.width, CANVAS_HEIGHT / arena.height);
+  const scale = Math.min(
+    CANVAS_WIDTH / 960,
+    CANVAS_HEIGHT / 640,
+    CANVAS_WIDTH / arena.width,
+    CANVAS_HEIGHT / arena.height,
+  );
   return {
     scale,
     x: (CANVAS_WIDTH - arena.width * scale) / 2,

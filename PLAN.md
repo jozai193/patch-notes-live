@@ -194,10 +194,14 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
 
 ### Step 8: Server, live hot-swap, watchdog (Day 2–3)
 
-- `server`: WebSocket hub to the overlay. Commands: `applyMod`, `revertMod`, `state`.
-- Overlay: loads mods into the sandbox. The watchdog reverts on exceptions or a budget overrun in 3 consecutive ticks and reports telemetry back.
+- `server`: local `ws` hub on PORT (8787 by default), with a version-1 validated JSON protocol. Send hello/applyPatch/revertPatch to overlays; accept overlay hello, patchApplied, patchReverted and one-second telemetry. Controller requests support apply/revert CLIs. Independently verify every source before broadcasting.
+- `SandboxHost.addMod(id, source)` and `removeMod(id)` hot-swap isolated runtimes without a world reset. New onStart runs at the next tick; removal disposes the VM. Preserve deterministic budgets and fault auto-disable.
+- Overlay PatchManager: at most three patches, oldest expires on the fourth; default lifetime 120 seconds, configurable. Keep patches on restart, rerun onStart, and show name/author/countdown. Revert on sandbox auto-disable using the first fault message, or p95 sandbox time >4ms over a three-second window. Restore owned rule settings/spawns without rewinding movement, damage, score or time.
 - Version stack: v1.0 is the base game, and each applied patch adds +0.1 to the version.
-- **Done when:** applying and reverting from a CLI changes the running game without a reload.
+- Render shrinking arenas at fixed base 960x640 scale with a centered dim void; scale down only for larger arenas. Round labels and draw a dashed wrap border. Generate dramatic, survivable effects, with hazards outside an 80px exclusion around spawn.
+- `npm run dev` starts hub and overlay via a Node launcher. Support patch:apply, patch:revert, and patch generation with --apply. Standalone overlay operation and reconnect backoff remain supported. Show apply cards and red revert banners.
+- Add time-bomb.js: passes the fixed 60-second harness, throws after game time 70s, and is reverted by the live watchdog.
+- **Done when:** tsc, full npm test and lint pass; live split-on-hit applies without reload; fourth apply expires oldest; time bomb auto-reverts around 70s with its banner. Do not start Step 9.
 
 ### Step 9: Chat intake and moderation, simulated first (Day 3)
 

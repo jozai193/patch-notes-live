@@ -12,6 +12,11 @@
   },
   "dependencies": {
     "@openai/codex-sdk": "^0.165.0",
-    "@patch-notes-live/harness": "0.0.0"
+    "@patch-notes-live/harness": "0.0.0",
+    "@patch-notes-live/mod-api": "0.0.0",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.18.2"
   }
 }

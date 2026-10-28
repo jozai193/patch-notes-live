@@ -13,7 +13,9 @@
     "lint": "eslint .",
     "build": "tsc -b && npm run build:template -w @patch-notes-live/server",
     "format": "prettier --write .",
-    "dev": "npm run dev -w @patch-notes-live/overlay",
+    "dev": "node scripts/dev.mjs",
+    "patch:apply": "node scripts/server.mjs apply",
+    "patch:revert": "node scripts/server.mjs revert",
     "verify": "node packages/harness/verify.mjs",
     "patch": "node packages/server/patch.mjs",
     "bench": "node scripts/bench.mjs"

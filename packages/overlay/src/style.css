@@ -253,7 +253,41 @@ h2 {
 }
 .patches {
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
   position: relative;
+}
+.patches .panel-heading {
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+#active-patches {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #38564c transparent;
+}
+.telemetry {
+  flex-shrink: 0;
+  padding: 16px;
+}
+.telemetry .panel-heading {
+  margin-bottom: 14px;
+}
+.telemetry .hp-meter {
+  margin-bottom: 14px;
+}
+.telemetry .stats {
+  margin-bottom: 12px;
+}
+.telemetry .stats strong {
+  font-size: 30px;
+}
+.telemetry .time {
+  padding-top: 10px;
 }
 .count {
   font:
@@ -283,7 +317,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 18px;
+  margin-top: 8px;
   font:
     10px Consolas,
     monospace;
@@ -296,6 +330,7 @@ h2 {
   letter-spacing: 0;
 }
 .bot-toggle {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 13px;
@@ -489,4 +524,58 @@ html.obs,
     10px/1.6 Consolas,
     monospace;
   pointer-events: none;
+}
+.patch-notice {
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  right: 30px;
+  z-index: 5;
+  padding: 16px 20px;
+  border: 1px solid #85ead0;
+  border-radius: 5px;
+  background: #102b27ed;
+  color: #c8fff0;
+  pointer-events: none;
+  font:
+    600 15px/1.5 'Segoe UI',
+    sans-serif;
+}
+.patch-notice.reverted {
+  top: auto;
+  bottom: 20px;
+  background: #491d20ed;
+  color: #ffe1df;
+  border-color: #ff7777;
+}
+.active-patch {
+  text-align: left;
+  padding: 4px 0;
+  border-bottom: 1px solid #85ead022;
+}
+.active-patch strong,
+.active-patch span,
+.active-patch small {
+  display: block;
+}
+.active-patch strong {
+  color: #c8fff0;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.active-patch span,
+.active-patch small {
+  color: #a0b5ac;
+  font:
+    11px/1.3 Consolas,
+    monospace;
+}
+#server-status {
+  color: #81978e;
+  font:
+    10px/1.5 Consolas,
+    monospace;
 }

@@ -4,6 +4,9 @@ export default defineConfig({
   test: { fileParallelism: false, testTimeout: 15_000 },
   resolve: {
     alias: {
+      '@patch-notes-live/mod-api/protocol': fileURLToPath(
+        new URL('../mod-api/src/protocol.ts', import.meta.url),
+      ),
       '@patch-notes-live/harness': fileURLToPath(
         new URL('../harness/src/index.ts', import.meta.url),
       ),

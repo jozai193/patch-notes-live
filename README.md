@@ -1,6 +1,6 @@
 # Patch Notes Live
 
-Steps 1–7 implement the shared deterministic game core, playable overlay, QuickJS sandbox, headless verifier, sample mods, runtime Codex patch CLI and benchmark. See [PLAN.md](PLAN.md) for the later build steps.
+Steps 1–8 implement the deterministic game, playable overlay, QuickJS sandbox, verifier, patch-generation CLI, benchmark and live WebSocket hot-swap/watchdog. See [PLAN.md](PLAN.md) for later build steps.
 
 ## Play locally
 
@@ -11,18 +11,20 @@ npm install
 npm run dev
 ```
 
-Open [localhost:5173](http://localhost:5173). The root command starts the overlay; `npm run dev -w @patch-notes-live/overlay` does the same thing. Vite imports engine TypeScript source through an alias, so no engine build is needed before starting the game.
+Open [localhost:5173](http://localhost:5173). The root command starts both the overlay and local WebSocket hub on port 8787, building trusted server code first. `npm run dev -w @patch-notes-live/overlay` starts only the overlay, which remains playable without a hub and reconnects with backoff when one appears. Vite imports engine/mod-api TypeScript source through aliases, so no engine build is needed for standalone play.
 
-Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. Press **B** or click Autopilot to toggle the scripted bot. After game over, press **R** or click Restart Run to restart with the same seed. Focus the game window to use the keyboard. Controls reset when the window loses focus; hidden tabs pause simulation time instead of accumulating a catch-up backlog.
+Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. Press **B** or click Autopilot to toggle the bot. Press **R** at any time, or click Restart Run after game over, to restart with the same seed and active patches. Their VM state and onStart reset; patch versions and remaining lifetimes are retained. Focus the game window to use the keyboard. Controls reset on blur; hidden tabs pause simulation instead of accumulating a catch-up backlog.
 
 - `?seed=42` selects a deterministic seed (default 1).
 - `?bot=1` starts with autopilot on.
 - `?obs=1` makes the page and arena background transparent and hides the cursor.
 - `?mod=split-on-hit` loads the sandboxed demo mod; enemies split into two smaller enemies when shot. Try [the demo with autopilot](http://localhost:5173/?bot=1&mod=split-on-hit&seed=1).
 - `?perf=1` shows fps, frame interval p95, and sandbox time per tick (mean/p95), with rolling windows of 300 frames and 300 simulation ticks. Timings are diagnostic and never control normal mod execution.
+- `?server=ws://localhost:8787` overrides the hub URL; `?server=off` explicitly runs standalone.
+- `?patchLifetime=120` configures patch lifetime in wall-clock seconds (1–3600, default 120).
 - Combine them: [OBS + bot, seed 1](http://localhost:5173/?obs=1&bot=1&seed=1).
 
-The layout uses a 1280×720 logical stage scaled to fit the window. Rendering interpolates between fixed 60 Hz simulation snapshots. Particles, hit flashes, screen shake, toast fading and tint timing are cosmetic; they do not consume the engine RNG. The HUD shows HP, wave, score, survival time and v1.0. The Active patches panel identifies the demo when loaded. Restart creates fresh per-mod VM state, and particle hooks compose alongside the sandbox host.
+The 1280×720 stage scales to fit the window. Arena rendering keeps a fixed scale based on the base 960×640 arena: smaller arenas are centered against a dim void, while larger arenas scale down to fit. Rounded labels show arena size; a dashed wall marks wrap mode. Rendering interpolates fixed 60 Hz snapshots. Cosmetic randomness does not consume the engine RNG. The HUD shows HP, wave, score, time and patch version. Active patches show name, author and countdown; particle hooks compose alongside the sandbox.
 
 ## Add to OBS
 
@@ -38,7 +40,7 @@ To build the overlay for static hosting:
 npm run build -w @patch-notes-live/overlay
 ```
 
-The output is `packages/overlay/dist/`. Runtime Twitch integration and patch loading are later PLAN.md steps.
+The output is `packages/overlay/dist/`. Live patch loading is available now; Twitch integration remains a later step.
 
 ## Local checks
 
@@ -81,7 +83,7 @@ Viewer text is normalized, capped at 200 Unicode characters, and written only as
 
 Compile-feed messages describe phases without forwarding raw reasoning, commands or model output. A separate in-process `verify()` checks the actual source. A failed report gets one retry in the same thread within a 150-second total timeout. Cancellation and timeout abort the runner. Cleanup is attempted on every outcome; cleanup errors are logged without discarding valid results. Usage-limit errors return `quota` immediately, without retry. Status is `ok`, `failed`, `rejected`, `timeout`, or `quota`, with attempts, thread ID, independent report and duration. Exit codes: 0 success, 1 failed/rejected, 124 timeout, 2 CLI/setup error.
 
-Verified mods and matching `.report.json` files are saved in `mods/generated/<slug>-<timestamp>.*`. They are source strings for the QuickJS sandbox; do not import or execute them in Node. Step 6 does not load them into the overlay; hot swapping comes in Step 8.
+Verified mods and matching `.report.json` files are saved in `mods/generated/<slug>-<timestamp>.*`. They are source strings for QuickJS; do not import or execute them in Node. Add `--apply` to push a successful generation through the live hub's independent verification.
 
 See [the recorded Step 6 validation](docs/step-6-validation.md) for full command outputs, real request statuses and durations.
 
@@ -99,6 +101,30 @@ The fixed catalog has exactly 20 cases; cases 5 and 19 must be rejected. With no
 Each invocation creates `bench-results/<timestamp>/` (ignored by Git, lint and formatting) with source files, full independent `.report.json` files, `output.log` and an incrementally saved `summary.json`. Failed verifications retain their source for diagnosis; rejected/cancelled runs may have no source. Per-case records include status, expected-status match, duration, attempts, first failed check, per-seed visible-effect measurements, reason and thread ID. Stored source strings are never imported or executed in Node.
 
 The summary reports game-rule pass rate, correct rejections, false rejections/acceptances, median/p90 duration and retries used. Median/p90 include all completed rule and rejection cases; p90 uses nearest rank. Quota and cancelled siblings are excluded from completed quality/latency measurements, with unstarted cases listed explicitly. Retries count all second attempts used. A quota-stopped run is incomplete and cannot establish GO/NO-GO. Exit codes: 0 all expected statuses matched, 1 a mismatch, 75 quota, 130 user cancellation, 2 setup/infrastructure error. Benchmark tests use fakes and never invoke real Codex.
+
+## Live patches and watchdog (Step 8)
+
+With `npm run dev` running:
+
+```sh
+npm run patch:apply -- mods/samples/split-on-hit.js --author local
+npm run patch:revert -- <patchId>
+npm run patch -- "enemies split in two when hit" --apply
+```
+
+The apply CLI prints the patch ID after the hub independently verifies and accepts the source. The overlay acknowledges actual activation at the next tick and shows `PATCH NOTES vX.Y: <name> by <author>`. A fourth patch expires the oldest; patches also expire after their lifetime. Reverts display a separate red banner. Version starts at v1.0 and increases by 0.1 for each accepted application; expiry/revert does not decrement it. Expired/reverted IDs are remembered across reconnects to prevent accidental reapplication.
+
+The hub binds only to loopback. `PORT` changes its port; CLI `PATCH_SERVER_URL` defaults to that port on 127.0.0.1. The overlay URL can be set with `?server=`. WebSocket messages carry `v: 1` and pass shared handwritten validators, with bounded metadata, UTF-8 source size, telemetry values and active-patch counts. Server→overlay messages are hello (current patches), applyPatch and revertPatch. Overlay→server messages are hello, patchApplied, patchReverted and telemetry every second (`fps`, `frameP95`, `sandboxP95`, `activePatches`). Controllers use hello, applyRequest/revertRequest and correlated result messages. Unknown fields/versions, malformed messages and role violations are refused. No Twitch or Codex credentials are needed for the hub or file-based live application.
+
+Every active patch owns a separate WASM/runtime/context with the existing memory, stack, deterministic instruction and fault limits. The watchdog removes auto-disabled patches using their first fault message; it also removes a patch with p95 sandbox time over 4 ms in a full three-second sampling window (at least 120 live samples). This live performance watchdog uses wall-clock telemetry; deterministic instruction enforcement remains unchanged. Missing/background simulation samples cannot create an instantaneous slow-patch verdict.
+
+Removal disposes the VM immediately. On the next tick, an ownership journal restores rule fields (radius, speed, color, tags, max HP, physics, arena) to the remaining patch layer or base value, and removes entities spawned by that patch. It does not rewind movement, damage, healing, score or elapsed time; pushes fade under normal drift damping. Re-running onStart during restart uses a fresh VM for each retained patch.
+
+```sh
+npm run patch:apply -- mods/samples/time-bomb.js
+```
+
+Apply this early in a fresh bot run. It passes the fixed 60-second verifier, then throws after **game time** 70 seconds. Three consecutive throws auto-disable it; the watchdog reverts it around 70.05 s with the red fault banner. This demonstrates the finite verification horizon and the live backstop. `--apply` generation tests use a fake Codex runner; normal npm tests never spend real Codex calls.
 
 ## Engine
 

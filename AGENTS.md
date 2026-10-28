@@ -19,14 +19,15 @@ You are building **Patch Notes Live**, a Twitch-integrated browser game where vi
 - Packages: `packages/engine`, `packages/mod-api`, `packages/harness`, `packages/overlay`, `packages/server`. Layout is in PLAN.md section 1.
 - `packages/engine` must stay **DOM-free and deterministic**: no `Math.random`, `Date.now`, or `performance.now` inside game logic. Use the seeded RNG and tick counter.
 - Tests use `vitest`. Every package has a `test` script, and the root `npm test` runs them all.
-- Keep dependencies minimal. Ask before adding anything beyond: `typescript`, `vitest`, `vite`, `quickjs-emscripten-core`, `@jitl/quickjs-wasmfile-release-sync`, `ws`, `@openai/codex-sdk`, `openai`, `dotenv`, `tsx`. ESLint, typescript-eslint and Prettier were also approved for this repository.
+- Keep dependencies minimal. Ask before adding anything beyond: `typescript`, `vitest`, `vite`, `quickjs-emscripten-core`, `@jitl/quickjs-wasmfile-release-sync`, `ws`, `@openai/codex-sdk`, `openai`, `dotenv`, `tsx`. ESLint, typescript-eslint, Prettier, @types/node and @types/ws were also approved for this repository.
 - Small files with focused modules. No `any` without a comment explaining why.
 
 ## Commands
 
 - `npm install`: install all workspaces
 - `npm test`: all tests
-- `npm run dev`: overlay (Vite); add the server alongside it once Step 8 exists
+- `npm run dev`: overlay (Vite) and local WebSocket hub together
+- `npm run patch:apply -- <file> [--author name]` / `npm run patch:revert -- <patchId>`: live hub control
 - `npm run patch -- "<rule text>"`: generate a mod via Codex, once Step 6 exists
 - `npx tsc -b`: type-check everything
 - `npm run verify -- <file> [--json]`: headless verification; exit 0 pass, 1 failed mod, 2 harness error. The CLI also works by absolute path from other directories.

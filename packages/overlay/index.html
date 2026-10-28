@@ -21,7 +21,8 @@
           </div>
         </div>
         <div class="session">
-          <span class="status-dot"></span> ARENA SURVIVAL <span class="version">v1.0</span>
+          <span class="status-dot"></span> ARENA SURVIVAL
+          <span id="version" class="version">v1.0</span>
         </div>
       </header>
       <div class="arena-heading">
@@ -34,9 +35,11 @@
           width="840"
           height="560"
           tabindex="0"
-          aria-label="Game arena. WASD moves, mouse aims, hold left click to shoot. B toggles bot. R restarts after game over."
+          aria-label="Game arena. WASD moves, mouse aims, hold left click to shoot. B toggles bot. R restarts with active patches."
         ></canvas>
         <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+        <div id="patch-notice" class="patch-notice" role="status" hidden></div>
+        <div id="patch-reverted" class="patch-notice reverted" role="status" hidden></div>
         <output id="perf" class="perf-readout" aria-label="Performance metrics" hidden></output>
         <section id="game-over" class="game-over" aria-label="Run complete" hidden>
           <span class="eyebrow">RUN COMPLETE</span>
@@ -80,9 +83,8 @@
             <h2>ACTIVE PATCHES</h2>
             <span id="patch-count" class="count">0 / 3</span>
           </div>
-          <div id="patch-mark" class="empty-mark">[ + ]</div>
-          <h3 id="patch-title">A clean slate.</h3>
-          <p id="patch-description">No active patches.<br />The base rules are in play.</p>
+          <div id="active-patches"><p>No active patches. The base rules are in play.</p></div>
+          <p id="server-status">Standalone · connecting to hub</p>
           <div class="base-rule"><span class="tiny-dot"></span> BASE GAME <span>v1.0</span></div>
         </section>
         <button id="bot-toggle" class="bot-toggle" type="button" aria-pressed="false">

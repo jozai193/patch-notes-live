@@ -2,10 +2,13 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createPatch } from './patch/createPatch.js';
 import { repoRoot } from './patch/workspace.js';
+import { liveRequest } from './live-client.js';
 
 export async function main(args: string[]): Promise<number> {
+  const apply = args.length === 2 && args[1] === '--apply';
+  if (apply) args = args.slice(0, 1);
   if (args.length !== 1 || !args[0]?.trim()) {
-    process.stderr.write('Usage: npm run patch -- "one game rule"\n');
+    process.stderr.write('Usage: npm run patch -- "one game rule" [--apply]\n');
     return 2;
   }
   const controller = new AbortController();
@@ -38,6 +41,15 @@ export async function main(args: string[]): Promise<number> {
         { flag: 'wx' },
       );
       process.stdout.write(`Saved mods/generated/${name}.js and ${name}.report.json\n`);
+      if (apply) {
+        const live = await liveRequest({
+          type: 'applyRequest',
+          source: result.source,
+          author: 'Codex',
+        });
+        process.stdout.write(`Live hub: ${JSON.stringify(live)}\n`);
+        if (!live.ok) return 1;
+      }
     }
     // Source is saved above; keep terminal output short, with the complete independent report.
     const { source: _source, ...printable } = result;

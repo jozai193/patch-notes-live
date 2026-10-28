@@ -130,3 +130,9 @@ it('the heal-on-kill sample actually restores HP, not just a visual effect', asy
     host.dispose();
   }
 });
+
+it('the delayed time bomb intentionally passes the fixed 60-second verification horizon', async () => {
+  const report = await verify(await sample('time-bomb'));
+  expect(report.ok).toBe(true);
+  expect(report.stats.survivalSecondsBySeed).toEqual({ 1: 60, 2: 60, 3: 60 });
+});

@@ -3,6 +3,7 @@ export type HookName = keyof ModHost;
 export type FaultKind =
   'throw' | 'interrupt' | 'memory' | 'invalid-result' | 'emergency' | 'disabled' | 'dispose';
 export interface Fault {
+  modId?: number;
   modName: string;
   hook: HookName | 'load' | 'dispose';
   kind: FaultKind;
@@ -12,6 +13,7 @@ export interface Fault {
   stack?: string;
 }
 export interface ModInfo {
+  patchId?: string;
   id: number;
   name: string;
   description: string;

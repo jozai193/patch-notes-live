@@ -20,4 +20,6 @@ npm run verify -- mods/samples/split-on-hit.js
 npm run verify -- mods/samples/throws-on-tick.js --json
 ```
 
-The five good examples are also recorded in `mod-template/AGENTS.md` as the Step 5 seed guidance. The patch workspace bootstrap and Codex pipeline remain Step 6 work.
+Three good examples are included in `mod-template/AGENTS.md` alongside the runtime patch instructions.
+
+`time-bomb.js` intentionally **passes** the 60-second harness, then throws when game time exceeds 70 seconds. The live watchdog removes it after the sandbox auto-disables it (three consecutive throws), and displays the first fault message. This is a demonstration of the verifier's finite horizon, not a guarantee that a passing source stays safe forever. Apply it early in a fresh run with bot mode enabled to watch the backstop at about 70 seconds. Its onStart toast makes the patch visible during verification.

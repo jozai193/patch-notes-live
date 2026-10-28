@@ -1,10 +1,13 @@
 import { botIntent, composeHosts, World } from '@patch-notes-live/engine';
-import { SandboxHost, SPLIT_ON_HIT } from '@patch-notes-live/mod-api';
+import { SPLIT_ON_HIT } from '@patch-notes-live/mod-api';
+import type { ServerMessage } from '@patch-notes-live/mod-api/protocol';
+import { PatchManager } from './patch-manager.js';
+import { HubConnection } from './connection.js';
 import { Controls } from './controls.js';
 import { Effects, Feedback } from './effects.js';
 import { interpolateSnapshots, MAX_FRAME_SECONDS, planFrame } from './loop.js';
 import { render } from './renderer.js';
-import { PerfReadout } from './perf.js';
+import { PerfReadout, RollingSamples } from './perf.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, readOptions } from './view.js';
 import './style.css';
 
@@ -36,22 +39,47 @@ element('seed-label').textContent = `SEED ${options.seed}`;
 const feedback = new Feedback(element('toasts'), element('tint'));
 const perf = options.perf ? new PerfReadout(element('perf')) : undefined;
 let effects = new Effects();
-let sandbox: SandboxHost | undefined;
-const createSandbox = async () => {
-  sandbox?.dispose();
-  sandbox = options.mod ? await SandboxHost.create([SPLIT_ON_HIT]) : undefined;
-};
-await createSandbox();
-if (options.mod) {
-  element('patch-count').textContent = '1 / 3';
-  element('patch-title').textContent = 'Split on hit';
-  element('patch-description').textContent = 'Enemies break into two smaller enemies when shot.';
-  element('patch-mark').textContent = '[ ×2 ]';
+let connection: HubConnection | undefined;
+let noticeUntil = 0;
+let revertUntil = 0;
+function notice(text: string, reverted = false): void {
+  const node = element(reverted ? 'patch-reverted' : 'patch-notice');
+  node.textContent = text;
+  node.classList.toggle('reverted', reverted);
+  node.hidden = false;
+  if (reverted) revertUntil = performance.now() + 8000;
+  else noticeUntil = performance.now() + 6000;
 }
+const params = new URLSearchParams(location.search);
+const seconds = Number(params.get('patchLifetime') ?? 120);
+const manager = await PatchManager.create(
+  {
+    applied(patch, version) {
+      notice(`PATCH NOTES ${version}: ${patch.name} by ${patch.author}`);
+      connection?.send({ v: 1, type: 'patchApplied', patchId: patch.patchId, version });
+    },
+    reverted(patchId, reason) {
+      notice(`PATCH REVERTED: ${reason}`, true);
+      connection?.send({ v: 1, type: 'patchReverted', patchId, reason });
+    },
+  },
+  {
+    lifetimeMs:
+      (Number.isFinite(seconds) && seconds >= 1 && seconds <= 3600 ? seconds : 120) * 1000,
+  },
+);
+if (options.mod)
+  await manager.apply({
+    patchId: 'local-demo',
+    name: 'Split on hit',
+    description: 'Enemies split when shot.',
+    author: 'demo',
+    source: SPLIT_ON_HIT,
+  });
 const createWorld = () =>
   new World(
     options.seed,
-    composeHosts(sandbox ?? {}, {
+    composeHosts(manager.host, {
       onKill: (_g, { victim }) => {
         effects.kill(victim);
       },
@@ -82,21 +110,28 @@ function updateBot(): void {
 }
 
 async function restart(): Promise<void> {
-  if (!current.gameOver) return;
   if (restarting) return;
   restarting = true;
   controls.reset();
   effects = new Effects();
   feedback.clear();
   perf?.reset();
-  await createSandbox();
-  world = createWorld();
-  previous = current = world.snapshot();
-  accumulator = 0;
-  lastFrame = undefined;
-  gameOver.hidden = true;
-  canvas.focus({ preventScroll: true });
-  restarting = false;
+  try {
+    await manager.restart();
+    world = createWorld();
+    previous = current = world.snapshot();
+    accumulator = 0;
+    lastFrame = undefined;
+    gameOver.hidden = true;
+    canvas.focus({ preventScroll: true });
+  } catch (error) {
+    notice(
+      `Restart failed: ${error instanceof Error ? error.message : 'sandbox initialization failed'}`,
+      true,
+    );
+  } finally {
+    restarting = false;
+  }
 }
 
 let restarting = false;
@@ -116,7 +151,11 @@ function resize(): void {
   canvas.height = Math.round(CANVAS_HEIGHT * dpr);
 }
 window.addEventListener('resize', resize);
-window.addEventListener('pagehide', () => sandbox?.dispose());
+window.addEventListener('pagehide', () => {
+  manager.dispose();
+  connection?.close();
+  clearInterval(telemetryTimer);
+});
 document.addEventListener('visibilitychange', () => {
   lastFrame = undefined;
   accumulator = 0;
@@ -137,6 +176,35 @@ function updateHUD(): void {
   wave.textContent = String(Math.max(1, current.wave)).padStart(2, '0');
   score.textContent = String(current.score).padStart(4, '0');
   time.textContent = clock(current.time);
+  element('version').textContent = manager.version;
+  const active = manager.active;
+  element('patch-count').textContent = `${active.length} / 3`;
+  const signature = JSON.stringify(active);
+  const list = element('active-patches');
+  if (list.dataset.signature !== signature) {
+    list.dataset.signature = signature;
+    list.replaceChildren();
+    if (!active.length) {
+      const p = document.createElement('p');
+      p.textContent = 'No active patches. The base rules are in play.';
+      list.append(p);
+    }
+    for (const patch of active) {
+      const row = document.createElement('div');
+      row.className = 'active-patch';
+      row.dataset.patchId = patch.patchId;
+      const name = document.createElement('strong');
+      name.textContent = patch.name;
+      const author = document.createElement('span');
+      author.textContent = `by ${patch.author}`;
+      const countdown = document.createElement('small');
+      countdown.textContent = `${patch.remainingSeconds}s remaining`;
+      row.append(name, author, countdown);
+      list.append(row);
+    }
+  }
+  if (performance.now() >= noticeUntil) element('patch-notice').hidden = true;
+  if (performance.now() >= revertUntil) element('patch-reverted').hidden = true;
   gameOver.hidden = !current.gameOver;
   if (current.gameOver) {
     finalTime.textContent = clock(current.time);
@@ -153,18 +221,23 @@ function frame(now: number): void {
   const elapsed =
     lastFrame === undefined ? 0 : Math.min(MAX_FRAME_SECONDS, (now - lastFrame) / 1000);
   if (lastFrame !== undefined) perf?.frame(now - lastFrame);
+  if (lastFrame !== undefined) frameSamples.push(now - lastFrame);
   lastFrame = now;
   const plan = planFrame(accumulator, elapsed);
   accumulator = plan.accumulator;
+  manager.update();
   for (let i = 0; i < plan.ticks; i++) {
     if (current.gameOver) break;
     previous = current;
     world.tick(bot ? botIntent(current) : controls.intent(current.arena));
     current = world.snapshot();
-    perf?.tick(
-      sandbox?.mods.reduce((sum, m) => sum + (m.tick === current.tick ? m.timeThisTickMs : 0), 0) ??
-        0,
+    const duration = manager.host.mods.reduce(
+      (sum, m) => sum + (m.tick === current.tick ? m.timeThisTickMs : 0),
+      0,
     );
+    perf?.tick(duration);
+    tickSamples.push(duration);
+    manager.observeTick(current.tick);
     effects.observe(previous, current);
   }
   feedback.accept(world.drainEvents());
@@ -178,4 +251,54 @@ function frame(now: number): void {
   perf?.update(now);
   requestAnimationFrame(frame);
 }
+const frameSamples = new RollingSamples(60),
+  tickSamples = new RollingSamples(180);
+async function receive(message: ServerMessage): Promise<void> {
+  if (message.type === 'hello') {
+    const desired = new Set(message.patches.map((p) => p.patchId));
+    for (const patch of manager.active)
+      if (patch.patchId !== 'local-demo' && !desired.has(patch.patchId))
+        manager.revert(patch.patchId, 'server reset');
+    for (const patch of message.patches) {
+      const reason = manager.removedReason(patch.patchId);
+      if (reason) connection?.send({ v: 1, type: 'patchReverted', patchId: patch.patchId, reason });
+      else await manager.apply(patch);
+    }
+  } else if (message.type === 'applyPatch') {
+    const reason = manager.removedReason(message.patchId);
+    if (reason) connection?.send({ v: 1, type: 'patchReverted', patchId: message.patchId, reason });
+    else await manager.apply(message);
+  } else if (message.type === 'revertPatch') manager.revert(message.patchId, message.reason);
+}
+const server = params.get('server') ?? 'ws://localhost:8787';
+let messages: Promise<unknown> = Promise.resolve();
+if (server !== 'off' && /^wss?:\/\//.test(server) && server.length <= 2048)
+  connection = new HubConnection(
+    server,
+    (message) => {
+      messages = messages
+        .then(() => receive(message))
+        .catch((error) =>
+          notice(`PATCH REVERTED: ${error instanceof Error ? error.message : 'load failed'}`, true),
+        );
+    },
+    (connected) => {
+      element('server-status').textContent = connected
+        ? 'Hub connected'
+        : 'Standalone · reconnecting';
+    },
+  );
+else element('server-status').textContent = 'Standalone';
+const telemetryTimer = setInterval(() => {
+  manager.update();
+  const frames = frameSamples.summary();
+  connection?.send({
+    v: 1,
+    type: 'telemetry',
+    fps: frames.mean > 0 ? 1000 / frames.mean : 0,
+    frameP95: frames.p95,
+    sandboxP95: tickSamples.summary().p95,
+    activePatches: manager.active,
+  });
+}, 1000);
 requestAnimationFrame(frame);

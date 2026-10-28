@@ -104,6 +104,15 @@ export function render(
   const dpr = ctx.canvas.width / CANVAS_WIDTH;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  // Keep the smaller arena's walls visible against a dim void, including in OBS mode.
+  ctx.fillStyle = '#081012b8';
+  const outer = arenaView(snapshot.arena);
+  const innerWidth = snapshot.arena.width * outer.scale,
+    innerHeight = snapshot.arena.height * outer.scale;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, outer.y);
+  ctx.fillRect(0, outer.y + innerHeight, CANVAS_WIDTH, CANVAS_HEIGHT - outer.y - innerHeight);
+  ctx.fillRect(0, outer.y, outer.x, innerHeight);
+  ctx.fillRect(outer.x + innerWidth, outer.y, CANVAS_WIDTH - outer.x - innerWidth, innerHeight);
   const view = arenaView(snapshot.arena),
     shake = effects.offset();
   ctx.save();
@@ -132,7 +141,7 @@ export function render(
     ctx.font = '12px monospace';
     ctx.fillText('ARENA / 01', 20, 28);
     ctx.textAlign = 'right';
-    ctx.fillText(`${width} × ${height}`, width - 20, height - 20);
+    ctx.fillText(`${Math.round(width)} × ${Math.round(height)}`, width - 20, height - 20);
     ctx.textAlign = 'left';
   }
   for (const e of snapshot.entities) drawEntity(ctx, e, time, effects.isHit(e.id), aim);
@@ -150,5 +159,13 @@ export function render(
     ctx.lineTo(aim.x + 11, aim.y);
     ctx.stroke();
   }
+  ctx.restore();
+  ctx.save();
+  ctx.translate(view.x + shake.x, view.y + shake.y);
+  ctx.scale(view.scale, view.scale);
+  ctx.strokeStyle = '#85ead070';
+  ctx.lineWidth = 1.5 / view.scale;
+  if (snapshot.arena.wrap) ctx.setLineDash([7 / view.scale, 7 / view.scale]);
+  ctx.strokeRect(1, 1, width - 2, height - 2);
   ctx.restore();
 }
