@@ -57,16 +57,16 @@ scripts/       token helper, latency benchmark, demo seeding
 
 **Key decisions**
 
-| Decision      | Choice                                                                               | Why                                                                                     |
-| ------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| Game          | Top-down arena survival (player vs waves)                                            | Many easy-to-mutate rules (enemies, physics, spawns, scoring), and readable at a glance |
-| Determinism   | Fixed 60 Hz tick, seeded RNG, engine with no DOM                                     | Same code runs in the overlay and in the headless harness, so tests mean something      |
-| Sandbox       | `quickjs-emscripten` with an interrupt handler (CPU budget) and memory limit         | Real isolation: no DOM, network or `eval` escape. Infinite loops get cut off            |
-| Mod contract  | Small typed hook API (below)                                                         | Small enough for Codex to get right reliably, rich enough for surprising rules          |
-| Codex runtime | `@openai/codex-sdk` (`startThread` + `runStreamed`); `codex exec --json` as fallback | Codex is part of the product; streamed events feed the on-stream "compile feed"         |
-| Trust         | The server **re-runs the harness itself** after Codex finishes                       | Never trust the model's "tests pass" claim                                              |
-| Chat          | EventSub WebSocket `channel.chat.message` + Helix `POST /chat/messages`              | No public HTTPS endpoint needed; it's the officially recommended chat path              |
-| Fallback      | Mod cache searched by embedding similarity                                           | The demo survives slow or failed API calls                                              |
+| Decision      | Choice                                                                                       | Why                                                                                     |
+| ------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Game          | Top-down arena survival (player vs waves)                                                    | Many easy-to-mutate rules (enemies, physics, spawns, scoring), and readable at a glance |
+| Determinism   | Fixed 60 Hz tick, seeded RNG, engine with no DOM                                             | Same code runs in the overlay and in the headless harness, so tests mean something      |
+| Sandbox       | `quickjs-emscripten-core` + release-sync WASM, fixed interrupt-count budget and memory limit | Isolated WASM per mod; normal budget decisions are deterministic                        |
+| Mod contract  | Small typed hook API (below)                                                                 | Small enough for Codex to get right reliably, rich enough for surprising rules          |
+| Codex runtime | `@openai/codex-sdk` (`startThread` + `runStreamed`); `codex exec --json` as fallback         | Codex is part of the product; streamed events feed the on-stream "compile feed"         |
+| Trust         | The server **re-runs the harness itself** after Codex finishes                               | Never trust the model's "tests pass" claim                                              |
+| Chat          | EventSub WebSocket `channel.chat.message` + Helix `POST /chat/messages`                      | No public HTTPS endpoint needed; it's the officially recommended chat path              |
+| Fallback      | Mod cache searched by embedding similarity                                                   | The demo survives slow or failed API calls                                              |
 
 **Mod API v1 (keep it this small at first)**
 
@@ -112,7 +112,7 @@ interface Entity {
 }
 ```
 
-**Limits:** at most 3 active mods (the oldest expires), at most 300 entities, and a CPU budget of 2 ms per mod per tick.
+**Limits:** at most 3 active mods (the oldest expires), at most 300 entities, and a deterministic budget of 64 QuickJS interrupt-handler polls per mod per tick, shared across hooks. The performance target remains low millisecond overhead; wall-clock timing is telemetry, not normal control flow. A single VM call reaching 50 ms triggers emergency permanent disable. Three consecutive faulted calls or ten total also disable a mod. Uninitializable mods are disabled immediately.
 
 **Harness invariants (a mod must pass all of them)**
 
@@ -151,13 +151,13 @@ Each step lists **what to build** and **done when**, followed by a **Codex promp
 
 ### Step 3: Mod API and QuickJS sandbox (Day 1, **the riskiest piece**)
 
-- `mod-api`: `api.d.ts` per section 1, plus `SandboxHost` that loads a mod source into a QuickJS runtime. It exposes a **proxied** Game object (calls marshalled across the boundary), enforces the per-tick interrupt budget and memory limit, and returns hook results.
+- `mod-api`: `api.d.ts` per section 1, plus `SandboxHost` with a separate release-sync WASM module, runtime and context per mod. It exposes a **proxied** Game object (calls marshalled across the boundary), enforces the deterministic per-tick interrupt budget and memory limit, and returns hook results. Freeze shared intrinsics and report errors as bounded primitive messages; never dump mod-controlled VM objects.
 - Batch the marshalling: pass entity arrays as plain data once per tick and apply mutations as a command list. Don't make thousands of individual boundary calls.
 - **Done when:**
   - The 5 hand-written mods (Step 5) run.
   - An infinite-loop mod is interrupted without freezing the page.
   - 50 enemies plus 3 mods hold 60 fps.
-- Codex prompt: _"Implement packages/mod-api: api.d.ts exactly per PLAN.md, and SandboxHost using quickjs-emscripten. Each mod gets its own context, an interrupt handler enforcing 2 ms/tick, and a 16 MB memory limit. Marshal world state as plain JSON per tick and collect mutations as a command list applied by the engine. Wire it into engine hook points. Add tests: infinite loop gets interrupted, thrown errors are caught and reported, mutations apply."_
+- Codex prompt: _"Implement packages/mod-api: api.d.ts exactly per PLAN.md, and SandboxHost using quickjs-emscripten-core plus release-sync only. Each mod gets its own WASM instance/context, a shared 64-poll instruction budget per tick, a 50 ms emergency disable backstop, and a 16 MB memory limit. Marshal small hook payloads and lazily read entity lists. Collect mutations as validated commands applied by the engine. Harden error transport and dispose every handle. Add hostile-mod, disposal, deterministic replay and performance tests; disable after 3 consecutive or 10 total faulted calls."_
 
 ### Step 4: Headless harness (Day 1)
 

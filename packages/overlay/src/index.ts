@@ -4,6 +4,7 @@ import { Controls } from './controls.js';
 import { Effects, Feedback } from './effects.js';
 import { interpolateSnapshots, MAX_FRAME_SECONDS, planFrame } from './loop.js';
 import { render } from './renderer.js';
+import { PerfReadout } from './perf.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, readOptions } from './view.js';
 import './style.css';
 
@@ -33,6 +34,7 @@ const finalTime = element('final-time'),
   finalScore = element('final-score');
 element('seed-label').textContent = `SEED ${options.seed}`;
 const feedback = new Feedback(element('toasts'), element('tint'));
+const perf = options.perf ? new PerfReadout(element('perf')) : undefined;
 let effects = new Effects();
 let sandbox: SandboxHost | undefined;
 const createSandbox = async () => {
@@ -86,6 +88,7 @@ async function restart(): Promise<void> {
   controls.reset();
   effects = new Effects();
   feedback.clear();
+  perf?.reset();
   await createSandbox();
   world = createWorld();
   previous = current = world.snapshot();
@@ -149,6 +152,7 @@ function frame(now: number): void {
   }
   const elapsed =
     lastFrame === undefined ? 0 : Math.min(MAX_FRAME_SECONDS, (now - lastFrame) / 1000);
+  if (lastFrame !== undefined) perf?.frame(now - lastFrame);
   lastFrame = now;
   const plan = planFrame(accumulator, elapsed);
   accumulator = plan.accumulator;
@@ -157,6 +161,10 @@ function frame(now: number): void {
     previous = current;
     world.tick(bot ? botIntent(current) : controls.intent(current.arena));
     current = world.snapshot();
+    perf?.tick(
+      sandbox?.mods.reduce((sum, m) => sum + (m.tick === current.tick ? m.timeThisTickMs : 0), 0) ??
+        0,
+    );
     effects.observe(previous, current);
   }
   feedback.accept(world.drainEvents());
@@ -167,6 +175,7 @@ function frame(now: number): void {
   const visible = current.gameOver ? current : interpolateSnapshots(previous, current, plan.alpha);
   render(ctx, visible, effects, { x: intent.aimX, y: intent.aimY }, options.obs, visualTime);
   updateHUD();
+  perf?.update(now);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

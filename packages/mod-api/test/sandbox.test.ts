@@ -1,12 +1,9 @@
 import { createHash } from 'node:crypto';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { botIntent, composeHosts, World } from '@patch-notes-live/engine';
-import { loadQuickJS, SandboxHost } from '../src/index.js';
+import { SandboxHost } from '../src/index.js';
 
 const hosts: SandboxHost[] = [];
-beforeAll(async () => {
-  await loadQuickJS();
-});
 afterEach(() => {
   for (const host of hosts.splice(0)) host.dispose();
 });
@@ -167,7 +164,9 @@ describe('fault containment and capabilities', () => {
       for (const key of ['fetch','require','process','window','document','setTimeout','setInterval','__rand','__list','__log'])
         if(typeof globalThis[key]!=='undefined')throw Error('capability:'+key);
       if(g.rand.constructor('return typeof process')()!=='undefined')throw Error('host function');
-      Object.prototype.hostPolluted=true; globalThis.hostPolluted=true;
+      if(!Object.isFrozen(Object.prototype))throw Error('prototype not frozen');
+      try { Object.prototype.hostPolluted=true; } catch {}
+      globalThis.hostPolluted=true;
       g.player.tags=['isolated'];
     }`),
     ]);
@@ -204,7 +203,9 @@ describe('fault containment and capabilities', () => {
   });
 
   it('uses a single cumulative budget across repeated hook calls in a tick', async () => {
-    const host = await make([source('onHit(){for(let i=0;i<1000;i++){};return {cancel:true}}')]);
+    const host = await make([
+      source('onHit(){for(let i=0;i<10000;i++){};console.log("ran");return {cancel:true}}'),
+    ]);
     const w = new World(
       1,
       composeHosts(
@@ -219,26 +220,29 @@ describe('fault containment and capabilities', () => {
     );
     w.tick();
     expect(host.faults.some((f) => f.kind === 'interrupt' && f.tick === 1)).toBe(true);
-    expect(host.mods[0]!.timeThisTickMs).toBeLessThan(50);
+    expect(host.logs.length).toBeGreaterThan(1);
   });
 });
 
-it('hashes identically over 1200 ticks with deterministic Math.random and Date.now', async () => {
-  const mod = source(`onTick(g){g.state.n=(g.state.n||0)+1;
+it.each(Array.from({ length: 20 }, (_, i) => i + 1))(
+  'hashes identically over 1200 ticks with deterministic Math.random and Date.now (run %i/20)',
+  async () => {
+    const mod = source(`onTick(g){g.state.n=(g.state.n||0)+1;
     g.physics.gravity.x=Math.random()*2-1;g.player.tags=[String(Date.now()),String(new Date().getTime()),String(g.state.n)];},onHit(){return {cancel:true}}`);
-  const a = await make([mod]),
-    b = await make([mod]);
-  const wa = new World(1, a),
-    wb = new World(1, b);
-  for (let i = 0; i < 1200; i++) {
-    const intent = botIntent(wa.snapshot());
-    wa.tick(intent);
-    wb.tick(intent);
-  }
-  expect(wa.snapshot().tick).toBe(1200);
-  const hash = (w: World) =>
-    createHash('sha256').update(JSON.stringify(w.snapshot())).digest('hex');
-  expect(hash(wa)).toBe(hash(wb));
-  expect(a.faults).toEqual([]);
-  expect(b.faults).toEqual([]);
-});
+    const a = await make([mod]),
+      b = await make([mod]);
+    const wa = new World(1, a),
+      wb = new World(1, b);
+    for (let i = 0; i < 1200; i++) {
+      const intent = botIntent(wa.snapshot());
+      wa.tick(intent);
+      wb.tick(intent);
+    }
+    expect(wa.snapshot().tick).toBe(1200);
+    const hash = (w: World) =>
+      createHash('sha256').update(JSON.stringify(w.snapshot())).digest('hex');
+    expect(hash(wa)).toBe(hash(wb));
+    expect(a.faults).toEqual([]);
+    expect(b.faults).toEqual([]);
+  },
+);

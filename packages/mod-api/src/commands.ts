@@ -7,7 +7,7 @@ export const object = (v: unknown): v is Record<string, unknown> =>
 const number = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const id = (v: unknown): v is number => number(v) && Number.isSafeInteger(v) && v !== 0;
 
-export function decode(text: string, onHit: boolean) {
+export function decode(text: string, onHit: boolean, playerId?: number) {
   if (text.length > 262144) throw new InvalidResult('Result exceeds 256 KB');
   let value: unknown;
   try {
@@ -33,6 +33,7 @@ export function decode(text: string, onHit: boolean) {
       }
       case 'remove':
         if (!id(cmd.id)) throw new InvalidResult('Invalid removal');
+        if (cmd.id === playerId) throw new InvalidResult('Cannot remove player');
         return { type: 'remove' as const, id: cmd.id };
       case 'setPhysics': {
         const p = cmd.physics;

@@ -89,8 +89,18 @@ describe('query options and scaled mouse aim', () => {
   });
 
   it('reads reproducible seeds and independent bot/OBS flags', () => {
-    expect(readOptions('')).toEqual({ seed: 1, bot: false, obs: false });
-    expect(readOptions('?seed=42&bot=1&obs=1')).toEqual({ seed: 42, bot: true, obs: true });
-    expect(readOptions('?seed=garbage&bot=0&obs=0')).toEqual({ seed: 1, bot: false, obs: false });
+    expect(readOptions('')).toEqual({ seed: 1, bot: false, obs: false, perf: false });
+    expect(readOptions('?seed=42&bot=1&obs=1&perf=1')).toEqual({
+      seed: 42,
+      bot: true,
+      obs: true,
+      perf: true,
+    });
+    expect(readOptions('?seed=garbage&bot=0&obs=0')).toEqual({
+      seed: 1,
+      bot: false,
+      obs: false,
+      perf: false,
+    });
   });
 });

@@ -474,3 +474,19 @@ html.obs,
 .obs .panel {
   background: #152223df;
 }
+.perf-readout {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  padding: 9px 12px;
+  border: 1px solid #85ead055;
+  border-radius: 4px;
+  background: #101a1be8;
+  color: #b8d9cc;
+  white-space: pre;
+  font:
+    10px/1.6 Consolas,
+    monospace;
+  pointer-events: none;
+}

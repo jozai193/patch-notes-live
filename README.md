@@ -19,6 +19,7 @@ Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. Pre
 - `?bot=1` starts with autopilot on.
 - `?obs=1` makes the page and arena background transparent and hides the cursor.
 - `?mod=split-on-hit` loads the sandboxed demo mod; enemies split into two smaller enemies when shot. Try [the demo with autopilot](http://localhost:5173/?bot=1&mod=split-on-hit&seed=1).
+- `?perf=1` shows fps, frame interval p95, and sandbox time per tick (mean/p95), with rolling windows of 300 frames and 300 simulation ticks. Timings are diagnostic and never control normal mod execution.
 - Combine them: [OBS + bot, seed 1](http://localhost:5173/?obs=1&bot=1&seed=1).
 
 The layout uses a 1280×720 logical stage scaled to fit the window. Rendering interpolates between fixed 60 Hz simulation snapshots. Particles, hit flashes, screen shake, toast fading and tint timing are cosmetic; they do not consume the engine RNG. The HUD shows HP, wave, score, survival time and v1.0. The Active patches panel identifies the demo when loaded. Restart creates fresh per-mod VM state, and particle hooks compose alongside the sandbox host.
@@ -69,7 +70,7 @@ Waves start at tick 1, then 120 ticks after the last enemy is cleared or 600 tic
 
 ## Sandbox adapter boundary
 
-`ModHost` has the hook signatures from PLAN.md; the default host does nothing. Untrusted mod source runs exclusively in `SandboxHost` inside QuickJS, with separate 16 MB runtimes and cumulative 2 ms per-tick interrupt budgets. See [the sandbox notes](packages/mod-api/README.md) for usage, limits, fault handling and performance measurements. Interrupts are cooperative: large native builtins can overshoot the deadline before returning, so this is not a hard real-time guarantee.
+`ModHost` has the hook signatures from PLAN.md; the default host does nothing. Untrusted mod source runs exclusively in `SandboxHost` inside QuickJS. Each mod has its own release-sync WASM instance, 16 MB runtime, frozen shared intrinsics and a deterministic limit of 64 interrupt-handler polls per tick. A mod is disabled after three consecutive faulted calls or ten total; a 50 ms emergency single-call overrun disables it immediately. See [the sandbox notes](packages/mod-api/README.md) for error handling, limits and measurements. Large native builtins remain cooperatively interruptible; the emergency backstop cannot preempt operations that do not poll until they return.
 
 Initialization calls `onStart` before spawn notifications. Each live tick calls `onTick`, creates a scheduled wave and projectiles, integrates movement, resolves collisions (`onHit` before damage and `onKill` after death), then drains remaining spawn notifications. `onSpawn` receives detached entities. Hook-generated spawn chains are bounded at 1,000 notifications per drain.
 

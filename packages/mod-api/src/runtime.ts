@@ -3,26 +3,25 @@ import type {
   QuickJSHandle,
   QuickJSRuntime,
   QuickJSWASMModule,
-} from 'quickjs-emscripten';
+} from 'quickjs-emscripten-core';
 import type { Entity, Game } from '@patch-notes-live/engine';
 import { SHIM } from './shim.js';
 import { decode, object, replay } from './commands.js';
-import { InvalidResult, now } from './types.js';
+import { InstructionBudget } from './budget.js';
+import { InvalidResult, now, SandboxFailure } from './types.js';
 import type { Fault, HookName, LogEntry, ModInfo } from './types.js';
 
 export class ModRuntime {
   readonly info: ModInfo;
   private readonly runtime: QuickJSRuntime;
   private readonly vm: QuickJSContext;
+  private readonly budget = new InstructionBudget();
   private callHandle: QuickJSHandle | undefined;
   private active: Game | undefined;
   private known = new Map<number, Entity>();
   private readonly aliases = new Map<number, number>();
   private pendingIds: [number, number][] = [];
-  private deadline = Infinity;
-  private interrupted = false;
   private closed = false;
-  private budgetFaultTick = -1;
 
   constructor(
     module: QuickJSWASMModule,
@@ -37,17 +36,20 @@ export class ModRuntime {
       description: '',
       hooks: [],
       faultCount: 0,
+      consecutiveFaults: 0,
+      disabled: false,
+      disabledReason: undefined,
+      disposed: false,
       tick: -1,
       timeThisTickMs: 0,
+      interruptsThisTick: 0,
+      maxInterruptsPerTick: 0,
     };
     this.runtime = module.newRuntime();
     this.runtime.setMemoryLimit(16 * 1024 * 1024);
     this.runtime.setMaxStackSize(256 * 1024);
     this.runtime.removeModuleLoader();
-    this.runtime.setInterruptHandler(() => {
-      if (now() >= this.deadline) this.interrupted = true;
-      return this.interrupted;
-    });
+    this.runtime.setInterruptHandler(this.budget.poll);
     this.vm = this.runtime.newContext();
     this.bind('__rand', () => this.vm.newNumber(this.active?.rand() ?? 0));
     this.bind('__list', (kind) => {
@@ -58,38 +60,39 @@ export class ModRuntime {
       return this.vm.newString(JSON.stringify(entities));
     });
     this.bind('__log', (text) => {
+      if (!text || this.vm.typeof(text) !== 'string') return;
       logs.push({
         modName: this.info.name,
         tick: Math.max(0, this.info.tick),
-        message: this.vm.getString(text!).slice(0, 512),
+        message: this.vm.getString(text).slice(0, 512),
       });
       if (logs.length > 100) logs.shift();
     });
-    this.deadline = now() + 50;
+    this.budget.beginTick(-1);
     try {
-      const shim = this.take(this.vm.evalCode(SHIM, 'game-shim.js', { type: 'global' }));
+      const shim = this.execute(() => this.vm.evalCode(SHIM, 'game-shim.js', { type: 'global' }));
       try {
         this.callHandle = this.vm.getProp(shim, 'call');
         const install = this.vm.getProp(shim, 'install');
         try {
-          const namespace = this.take(this.vm.evalCode(source, 'mod.js', { type: 'module' }));
+          const namespace = this.execute(() =>
+            this.vm.evalCode(source, 'mod.js', { type: 'module' }),
+          );
           try {
-            const metadata = this.take(this.vm.callFunction(install, this.vm.undefined, namespace));
-            try {
-              const value: unknown = JSON.parse(this.vm.getString(metadata));
-              if (
-                !object(value) ||
-                typeof value.name !== 'string' ||
-                typeof value.description !== 'string' ||
-                !Array.isArray(value.hooks)
-              )
-                throw new InvalidResult('Invalid mod metadata');
-              this.info.name = value.name;
-              this.info.description = value.description;
-              this.info.hooks = value.hooks as HookName[];
-            } finally {
-              metadata.dispose();
-            }
+            const metadata = this.execute(() =>
+              this.vm.callFunction(install, this.vm.undefined, namespace),
+            );
+            const value = this.readJSON(metadata);
+            if (
+              !object(value) ||
+              typeof value.name !== 'string' ||
+              typeof value.description !== 'string' ||
+              !Array.isArray(value.hooks)
+            )
+              throw new InvalidResult('Invalid mod metadata');
+            this.info.name = value.name;
+            this.info.description = value.description;
+            this.info.hooks = value.hooks as HookName[];
           } finally {
             namespace.dispose();
           }
@@ -101,11 +104,16 @@ export class ModRuntime {
       }
     } catch (error) {
       this.fault('load', error);
-      this.info.hooks = [];
-    } finally {
-      this.deadline = Infinity;
-      this.interrupted = false;
+      this.disable('load', 'Mod could not be initialized');
     }
+  }
+
+  beginTick(tick: number): void {
+    if (this.info.tick === tick) return;
+    this.info.tick = tick;
+    this.info.timeThisTickMs = 0;
+    this.info.interruptsThisTick = 0;
+    this.budget.beginTick(tick);
   }
 
   private bind(name: string, fn: (...args: QuickJSHandle[]) => QuickJSHandle | void): void {
@@ -117,19 +125,53 @@ export class ModRuntime {
     }
   }
 
-  private take(result: ReturnType<QuickJSContext['evalCode']>): QuickJSHandle {
-    if (result.error) {
-      let message = 'QuickJS execution failed';
-      try {
-        const dumped: unknown = this.vm.dump(result.error);
-        if (object(dumped) && typeof dumped.message === 'string') message = dumped.message;
-        else if (typeof dumped === 'string') message = dumped;
-      } finally {
+  /** Never inspect, coerce or dump an arbitrary VM exception. */
+  private execute(run: () => ReturnType<QuickJSContext['evalCode']>): QuickJSHandle {
+    this.budget.startCall();
+    try {
+      const result = run();
+      const emergency = this.budget.checkEmergency();
+      if (result.error) {
         result.error.dispose();
+        if (emergency) throw new SandboxFailure('emergency', 'Single VM call exceeded 50 ms');
+        if (this.budget.exhausted)
+          throw new SandboxFailure('interrupt', 'Instruction budget exceeded');
+        throw new SandboxFailure(
+          this.info.tick < 0 ? 'invalid-result' : 'memory',
+          'VM exception (allocation/stack failure or invalid module)',
+        );
       }
-      throw new Error(message);
+      if (emergency) {
+        result.value.dispose();
+        throw new SandboxFailure('emergency', 'Single VM call exceeded 50 ms');
+      }
+      return result.value;
+    } finally {
+      this.budget.endCall();
     }
-    return result.value;
+  }
+
+  private readJSON(handle: QuickJSHandle): unknown {
+    let text: string;
+    try {
+      if (this.vm.typeof(handle) !== 'string') throw new InvalidResult('Non-string VM result');
+      text = this.vm.getString(handle);
+    } finally {
+      handle.dispose();
+    }
+    if (text.length > 262144) throw new InvalidResult('Result exceeds 256 KB');
+    const value: unknown = JSON.parse(text);
+    if (object(value) && value.ok === false) {
+      if (typeof value.message !== 'string') throw new InvalidResult('Invalid error message');
+      const message = value.message.slice(0, 512);
+      const kind = /out of memory/i.test(message)
+        ? 'memory'
+        : /limit|invalid|synchronous|cannot remove/i.test(message)
+          ? 'invalid-result'
+          : 'throw';
+      throw new SandboxFailure(kind, message);
+    }
+    return value;
   }
 
   invoke(
@@ -138,23 +180,10 @@ export class ModRuntime {
     event?: unknown,
     dt?: number,
   ): { damage?: number; cancel?: boolean } | undefined {
-    if (this.closed || !this.callHandle || !this.info.hooks.includes(hook)) return;
-    const tick = Math.round(g.time * 60);
-    if (this.info.tick !== tick) {
-      this.info.tick = tick;
-      this.info.timeThisTickMs = 0;
-    }
-    if (this.info.timeThisTickMs >= 2) {
-      if (this.budgetFaultTick !== tick) {
-        this.interrupted = true;
-        this.fault(hook, new Error('Tick budget exceeded'));
-        this.interrupted = false;
-      }
+    if (this.closed || this.info.disabled || !this.callHandle || !this.info.hooks.includes(hook))
       return;
-    }
+    this.beginTick(Math.round(g.time * 60));
     const start = now();
-    this.deadline = start + 2 - this.info.timeThisTickMs;
-    this.interrupted = false;
     this.active = g;
     this.known = new Map([[g.player.id, g.player]]);
     if (object(event)) {
@@ -167,6 +196,8 @@ export class ModRuntime {
       }
     }
     try {
+      if (this.budget.exhausted)
+        throw new SandboxFailure('interrupt', 'Instruction budget exhausted for this tick');
       const payload = this.vm.newString(
         JSON.stringify({
           hook,
@@ -179,48 +210,41 @@ export class ModRuntime {
           ids: this.pendingIds,
         }),
       );
-      let output: string;
+      let value: unknown;
       try {
-        const result = this.take(this.vm.callFunction(this.callHandle, this.vm.undefined, payload));
-        try {
-          if (this.vm.typeof(result) !== 'string') throw new InvalidResult('Non-JSON hook output');
-          output = this.vm.getString(result);
-        } finally {
-          result.dispose();
-        }
+        value = this.readJSON(
+          this.execute(() => this.vm.callFunction(this.callHandle!, this.vm.undefined, payload)),
+        );
       } finally {
         payload.dispose();
       }
-      if (now() >= this.deadline) {
-        this.interrupted = true;
-        throw new Error('Tick budget exceeded');
-      }
-      const decoded = decode(output, hook === 'onHit');
+      const decoded = decode(JSON.stringify(value), hook === 'onHit', g.player.id);
       this.pendingIds = replay(g, decoded, this.known, this.aliases);
+      this.info.consecutiveFaults = 0;
       return decoded.result;
     } catch (error) {
       this.fault(hook, error);
     } finally {
       this.info.timeThisTickMs += now() - start;
+      this.info.interruptsThisTick = this.budget.used;
+      this.info.maxInterruptsPerTick = Math.max(this.info.maxInterruptsPerTick, this.budget.used);
       this.active = undefined;
       this.known.clear();
-      this.deadline = Infinity;
-      this.interrupted = false;
     }
   }
 
-  private fault(hook: HookName | 'load', error: unknown): void {
-    const message = error instanceof Error ? error.message : 'QuickJS fault';
-    const kind = /out of memory|allocation failed/i.test(message)
-      ? 'memory'
-      : this.interrupted || /interrupted|budget/i.test(message)
-        ? 'interrupt'
-        : error instanceof InvalidResult ||
-            /Invalid mod|Invalid hook|synchronous|limit exceeded/i.test(message)
-          ? 'invalid-result'
-          : 'throw';
+  private fault(hook: Fault['hook'], error: unknown): void {
+    const message = error instanceof Error ? error.message : 'Sandbox host failure';
+    const kind =
+      hook === 'dispose'
+        ? 'dispose'
+        : error instanceof SandboxFailure
+          ? error.kind
+          : error instanceof InvalidResult
+            ? 'invalid-result'
+            : 'throw';
     this.info.faultCount++;
-    if (kind === 'interrupt') this.budgetFaultTick = this.info.tick;
+    this.info.consecutiveFaults++;
     this.report({
       modName: this.info.name,
       hook,
@@ -228,13 +252,41 @@ export class ModRuntime {
       message: message.slice(0, 512),
       tick: Math.max(0, this.info.tick),
     });
+    if (kind === 'emergency' || this.info.consecutiveFaults >= 3 || this.info.faultCount >= 10)
+      this.disable(hook, kind === 'emergency' ? message : 'Fault threshold reached');
+  }
+
+  private disable(hook: Fault['hook'], reason: string): void {
+    if (this.info.disabled) return;
+    this.info.disabled = true;
+    this.info.disabledReason = reason;
+    this.report({
+      modName: this.info.name,
+      hook,
+      kind: 'disabled',
+      message: reason,
+      tick: Math.max(0, this.info.tick),
+    });
   }
 
   dispose(): void {
     if (this.closed) return;
     this.closed = true;
-    this.callHandle?.dispose();
-    this.vm.dispose();
-    this.runtime.dispose();
+    for (const dispose of [
+      () => this.callHandle?.dispose(),
+      () => this.vm.dispose(),
+      () => this.runtime.dispose(),
+    ]) {
+      try {
+        dispose();
+      } catch (error) {
+        this.fault('dispose', error);
+      }
+    }
+    this.info.disposed = true;
+    this.active = undefined;
+    this.known.clear();
+    this.aliases.clear();
+    this.pendingIds = [];
   }
 }

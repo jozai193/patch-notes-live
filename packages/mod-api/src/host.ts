@@ -1,12 +1,12 @@
-import { newQuickJSWASMModule, RELEASE_SYNC } from 'quickjs-emscripten';
-import type { QuickJSWASMModule } from 'quickjs-emscripten';
+import { newQuickJSWASMModuleFromVariant } from 'quickjs-emscripten-core';
+import type { QuickJSWASMModule } from 'quickjs-emscripten-core';
 import type { Entity, Game, ModHost } from '@patch-notes-live/engine';
 import { ModRuntime } from './runtime.js';
 import type { Fault, LogEntry, ModInfo } from './types.js';
 
-let modulePromise: Promise<QuickJSWASMModule> | undefined;
+// Never cache the WASM instance: an abort must be confined to exactly one mod.
 export function loadQuickJS(): Promise<QuickJSWASMModule> {
-  return (modulePromise ??= newQuickJSWASMModule(RELEASE_SYNC));
+  return newQuickJSWASMModuleFromVariant(import('@jitl/quickjs-wasmfile-release-sync'));
 }
 
 export class SandboxHost implements ModHost {
@@ -15,15 +15,19 @@ export class SandboxHost implements ModHost {
   private readonly runtimes: ModRuntime[];
 
   static async create(sources: string[]): Promise<SandboxHost> {
-    return new SandboxHost(await loadQuickJS(), sources);
+    if (sources.length > 3) throw new Error('At most 3 mods can be active');
+    const modules = await Promise.all(sources.map(() => loadQuickJS()));
+    return new SandboxHost(modules, sources);
   }
 
-  constructor(module: QuickJSWASMModule, sources: string[]) {
+  constructor(modules: QuickJSWASMModule[], sources: string[]) {
     if (sources.length > 3) throw new Error('At most 3 mods can be active');
+    if (modules.length !== sources.length || new Set(modules).size !== modules.length)
+      throw new Error('Each mod requires its own WASM module instance');
     this.runtimes = sources.map(
       (source, index) =>
         new ModRuntime(
-          module,
+          modules[index]!,
           source,
           index,
           (fault) => {
@@ -46,13 +50,16 @@ export class SandboxHost implements ModHost {
           ? m.name === mod
           : m.id === mod.id,
     );
-    return !!info && info.faultCount === 0;
+    return !!info && !info.disabled && !info.disposed && info.faultCount === 0;
   }
   onStart(g: Game): void {
     for (const mod of this.runtimes) mod.invoke('onStart', g);
   }
   onTick(g: Game, dt: number): void {
-    for (const mod of this.runtimes) mod.invoke('onTick', g, undefined, dt);
+    for (const mod of this.runtimes) {
+      mod.beginTick(Math.round(g.time * 60));
+      mod.invoke('onTick', g, undefined, dt);
+    }
   }
   onSpawn(g: Game, e: Entity): void {
     for (const mod of this.runtimes) mod.invoke('onSpawn', g, e);

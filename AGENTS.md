@@ -10,6 +10,7 @@ You are building **Patch Notes Live**, a Twitch-integrated browser game where vi
 - Before writing code, state in 3–6 bullets what you will create or change.
 - A step is finished only when its **"Done when"** criteria in PLAN.md pass. Show the command output that proves it.
 - After each finished step, commit with the message `step N: <summary>`.
+- Before every commit, run the full root `npm test` and require it to pass. Targeted package tests do not replace this gate.
 - If something in PLAN.md turns out to be infeasible (library limitation, performance), report it with evidence and propose the smallest change. Don't work around it quietly.
 
 ## Stack and conventions
@@ -18,7 +19,7 @@ You are building **Patch Notes Live**, a Twitch-integrated browser game where vi
 - Packages: `packages/engine`, `packages/mod-api`, `packages/harness`, `packages/overlay`, `packages/server`. Layout is in PLAN.md section 1.
 - `packages/engine` must stay **DOM-free and deterministic**: no `Math.random`, `Date.now`, or `performance.now` inside game logic. Use the seeded RNG and tick counter.
 - Tests use `vitest`. Every package has a `test` script, and the root `npm test` runs them all.
-- Keep dependencies minimal. Ask before adding anything beyond: `typescript`, `vitest`, `vite`, `quickjs-emscripten`, `ws`, `@openai/codex-sdk`, `openai`, `dotenv`, `tsx`.
+- Keep dependencies minimal. Ask before adding anything beyond: `typescript`, `vitest`, `vite`, `quickjs-emscripten-core`, `@jitl/quickjs-wasmfile-release-sync`, `ws`, `@openai/codex-sdk`, `openai`, `dotenv`, `tsx`. ESLint, typescript-eslint and Prettier were also approved for this repository.
 - Small files with focused modules. No `any` without a comment explaining why.
 
 ## Commands

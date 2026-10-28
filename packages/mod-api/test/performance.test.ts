@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { World } from '@patch-notes-live/engine';
-import { SandboxHost } from '../src/index.js';
+import { INSTRUCTION_BUDGET, SandboxHost } from '../src/index.js';
 
 it('profiles 50 enemies and 3 mods with onTick and onHit over 600 ticks', async () => {
   const host = await SandboxHost.create(
@@ -54,6 +54,11 @@ it('profiles 50 enemies and 3 mods with onTick and onHit over 600 ticks', async 
     console.log(
       `SANDBOX PERF: ticks=600 enemies=50 mods=3 mean=${mean.toFixed(3)}ms p95=${p95.toFixed(3)}ms onHitCalls=${host.logs.length}`,
     );
+    const maxPolls = Math.max(...host.mods.map((m) => m.maxInterruptsPerTick));
+    console.log(
+      `INSTRUCTION CALIBRATION: max=${maxPolls}/${INSTRUCTION_BUDGET} polls (${((100 * maxPolls) / INSTRUCTION_BUDGET).toFixed(2)}%)`,
+    );
+    expect(maxPolls).toBeLessThan(INSTRUCTION_BUDGET * 0.1);
     expect(host.faults).toEqual([]);
     expect(host.logs.length).toBeGreaterThanOrEqual(60);
     expect(w.snapshot().entities.filter((e) => e.kind === 'enemy')).toHaveLength(50);

@@ -9,7 +9,8 @@
     "test": "vitest run --disableConsoleIntercept"
   },
   "dependencies": {
-    "quickjs-emscripten": "^0.32.0",
-    "@patch-notes-live/engine": "0.0.0"
+    "@jitl/quickjs-wasmfile-release-sync": "^0.32.0",
+    "@patch-notes-live/engine": "0.0.0",
+    "quickjs-emscripten-core": "^0.32.0"
   }
 }
