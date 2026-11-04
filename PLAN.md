@@ -1,19 +1,19 @@
 # Patch Notes Live: Implementation Plan
 
-> Chat writes the game's rules. Codex turns them into real, sandboxed code while the game is live.
+> Players write the game's rules. Codex turns them into real, sandboxed code while the game is live.
 
 **Current targets (updated November 4)**
 
 - Next Byte Hacks V5: **November 7, 5 PM EST** (user-provided deadline). Judging: innovation, technical complexity, execution/polish, and presentation, 25% each.
 - Arbiter Hacks V1, General track: **December 20**.
-- Twitch is optional. The primary input will be an in-game rule box in the next requested step. This step only changes visuals and the explicitly authorized visual API. Earlier Twitch-specific submission steps below are historical, pending a separate plan revision.
+- Twitch is optional. The primary input is an in-game rule box; Step 9 adds the verified archive and standalone web demo. Earlier Twitch-specific submission steps below are historical, pending a separate plan revision.
 
 ---
 
 ## 1. Architecture
 
 ```
- Twitch chat ──EventSub WS──▶ ┌──────────────── server (Node/TS) ───────────────┐
+ Rule box / optional chat ─WS─▶ ┌──────────────── server (Node/TS) ───────────────┐
                               │ intake → moderation → clustering → vote          │
                               │                 │                                │
                               │                 ▼                                │
@@ -43,22 +43,22 @@ packages/
   overlay/     Vite app: canvas renderer, OBS browser source, UI panels
   server/      Twitch EventSub, intake, moderation, clustering, voting, patch pipeline, WS hub
 mod-template/  the workspace copied for every Codex patch (AGENTS.md, api.d.ts, mod.js stub, test script)
-mods/cache/    pre-generated verified mods + embeddings (fallback)
+mods/archive/  verified samples, generated/benchmark mods and request metadata (fallback)
 scripts/       token helper, latency benchmark, demo seeding
 ```
 
 **Key decisions**
 
-| Decision      | Choice                                                                                       | Why                                                                                     |
-| ------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Game          | Top-down arena survival (player vs waves)                                                    | Many easy-to-mutate rules (enemies, physics, spawns, scoring), and readable at a glance |
-| Determinism   | Fixed 60 Hz tick, seeded RNG, engine with no DOM                                             | Same code runs in the overlay and in the headless harness, so tests mean something      |
-| Sandbox       | `quickjs-emscripten-core` + release-sync WASM, fixed interrupt-count budget and memory limit | Isolated WASM per mod; normal budget decisions are deterministic                        |
-| Mod contract  | Small typed hook API (below)                                                                 | Small enough for Codex to get right reliably, rich enough for surprising rules          |
-| Codex runtime | `@openai/codex-sdk` (`startThread` + `runStreamed`); `codex exec --json` as fallback         | Codex is part of the product; streamed events feed the on-stream "compile feed"         |
-| Trust         | The server **re-runs the harness itself** after Codex finishes                               | Never trust the model's "tests pass" claim                                              |
-| Chat          | EventSub WebSocket `channel.chat.message` + Helix `POST /chat/messages`                      | No public HTTPS endpoint needed; it's the officially recommended chat path              |
-| Fallback      | Mod cache searched by embedding similarity                                                   | The demo survives slow or failed API calls                                              |
+| Decision               | Choice                                                                                       | Why                                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Game                   | Top-down arena survival (player vs waves)                                                    | Many easy-to-mutate rules (enemies, physics, spawns, scoring), and readable at a glance |
+| Determinism            | Fixed 60 Hz tick, seeded RNG, engine with no DOM                                             | Same code runs in the overlay and in the headless harness, so tests mean something      |
+| Sandbox                | `quickjs-emscripten-core` + release-sync WASM, fixed interrupt-count budget and memory limit | Isolated WASM per mod; normal budget decisions are deterministic                        |
+| Mod contract           | Small typed hook API (below)                                                                 | Small enough for Codex to get right reliably, rich enough for surprising rules          |
+| Codex runtime          | `@openai/codex-sdk` (`startThread` + `runStreamed`); `codex exec --json` as fallback         | Codex is part of the product; streamed events feed the on-stream "compile feed"         |
+| Trust                  | The server **re-runs the harness itself** after Codex finishes                               | Never trust the model's "tests pass" claim                                              |
+| Chat (later, optional) | EventSub WebSocket `channel.chat.message` + Helix `POST /chat/messages`                      | No public HTTPS endpoint needed; it's the officially recommended chat path              |
+| Fallback               | Verified archive matched by normalized tokens and synonyms                                   | The demo survives slow or failed API calls                                              |
 
 **Mod API v1 (keep it this small at first)**
 
@@ -191,7 +191,7 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
 
 - `server`: local `ws` hub on PORT (8787 by default), with a version-1 validated JSON protocol. Send hello/applyPatch/revertPatch to overlays; accept overlay hello, patchApplied, patchReverted and one-second telemetry. Controller requests support apply/revert CLIs. Independently verify every source before broadcasting.
 - `SandboxHost.addMod(id, source)` and `removeMod(id)` hot-swap isolated runtimes without a world reset. New onStart runs at the next tick; removal disposes the VM. Preserve deterministic budgets and fault auto-disable.
-- Overlay PatchManager: at most three patches, oldest expires on the fourth; default lifetime 120 seconds, configurable. Keep patches on restart, rerun onStart, and show name/author/countdown. Revert on sandbox auto-disable using the first fault message, or p95 sandbox time >4ms over a three-second window. Restore owned rule settings/spawns without rewinding movement, damage, score or time.
+- Overlay PatchManager: at most three patches, oldest expires on the fourth; default lifetime 180 seconds, configurable. Keep patches on restart, rerun onStart, and show name/author/countdown. Revert on sandbox auto-disable using the first fault message, or p95 sandbox time >4ms over a three-second window. Restore owned rule settings/spawns without rewinding movement, damage, score or time.
 - Version stack: v1.0 is the base game, and each applied patch adds +0.1 to the version.
 - Render shrinking arenas at fixed base 960x640 scale with a centered dim void; scale down only for larger arenas. Round labels and draw a dashed wrap border. Generate dramatic, survivable effects, with hazards outside an 80px exclusion around spawn.
 - `npm run dev` starts hub and overlay via a Node launcher. Support patch:apply, patch:revert, and patch generation with --apply. Standalone overlay operation and reconnect backoff remain supported. Show apply cards and red revert banners.
@@ -207,11 +207,15 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
 - MIT license using the git author name; update template examples and good sample notes.
 - **Done when:** tsc, full npm test, lint pass; real browser ?perf=1 shows at least 60fps with 150+ entities and three active patches; before/after screenshots saved in docs/screenshots. Commit step 8.5 only; no rule box or later step.
 
-### Step 9: Chat intake and moderation, simulated first (Day 3)
+### Step 9: Rule box, patch archive, web build
 
-- `ChatSource` interface with two implementations: `SimChat` (a scripted or keyboard-driven fake chat for development and demo rehearsal) and `TwitchChat` (Step 11).
-- `!rule <text>`: normalize the text, apply a per-user cooldown, run the OpenAI moderation endpoint, then a blocklist, then a "is this a game rule?" filter (rejects things like "ban user X" or "say a slur").
-- **Done when:** in SimChat, abusive suggestions are dropped and valid ones get queued.
+- Primary input: 200-character rule box and optional name (default You) under the arena; Enter/Patch it sends a validated request to the local hub. Twitch remains optional.
+- Hub: family-friendly blocklist, per-client 20s cooldown, one compile worker plus three waiting rules. Stream bounded compile events with request IDs and elapsed times, independently reverify before apply, preserve author attribution. Failures explain why; quota falls back to a matching archive patch with an honest label.
+- Verified archive: five good samples, generated mods, and every available benchmark source that passes the harness; funny patchNotes and an index of file/name/request/notes/tags. verify:archive checks every entry. Share conservative normalized token/synonym matching across Node and browser; unmatched requests receive the explicit no-archive message. A clickable archive list works instantly.
+- Rule/compile UI, first-run three-line help remembered with storage errors caught, web-demo disclosure, separate revert/combo anchors; default patch lifetime 180s.
+- build:web bundles the archive with relative Vite base and release-sync WASM. Static pages work from subfolders without the hub. Add a main-branch Pages build/deploy workflow; do not create a remote or push.
+- Judge README: pitch/screenshot, online placeholder, local setup/auth, architecture, safety, measured benchmark, Codex usage and limitations.
+- **Done when:** tsc, full root test, lint, verify:archive pass; one real live rule request for enemies fleeing shows streamed progress and applies; build:web plus bare npx vite preview with hub stopped plays standalone and matches make the player huge; report archive count and build size. Commit step 9 only.
 
 ### Step 10: Clustering and voting (Day 3)
 

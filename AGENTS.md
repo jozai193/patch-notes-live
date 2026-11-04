@@ -1,6 +1,6 @@
 # AGENTS.md: Patch Notes Live
 
-You are building **Patch Notes Live**, a browser game where players propose rule changes (Twitch chat is optional; an in-game rule box is planned next). Codex generates each rule as a sandboxed mod, a test harness verifies it, and it is hot-loaded into the running game.
+You are building **Patch Notes Live**, a browser game where players propose rule changes (Twitch chat is optional; the in-game rule box is the primary input). Codex generates each rule as a sandboxed mod, a test harness verifies it, and it is hot-loaded into the running game.
 
 **PLAN.md is the source of truth** for architecture, the mod API, harness invariants, and build steps. Read it before every task. If a task conflicts with PLAN.md, stop and say so. Don't silently deviate.
 

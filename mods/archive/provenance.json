@@ -1,0 +1,177 @@
+[
+  {
+    "path": "mods/samples/split-on-hit.js",
+    "request": "split on hit",
+    "prefix": "sample",
+    "file": "sample-split-on-hit.js",
+    "included": true
+  },
+  {
+    "path": "mods/samples/gravity-flip-every-10s.js",
+    "request": "gravity flip every 10s",
+    "prefix": "sample",
+    "file": "sample-gravity-flip-every-10s.js",
+    "included": true
+  },
+  {
+    "path": "mods/samples/floor-is-lava.js",
+    "request": "floor is lava",
+    "prefix": "sample",
+    "file": "sample-floor-is-lava.js",
+    "included": true
+  },
+  {
+    "path": "mods/samples/enemies-tiny-and-fast.js",
+    "request": "enemies tiny and fast",
+    "prefix": "sample",
+    "file": "sample-enemies-tiny-and-fast.js",
+    "included": true
+  },
+  {
+    "path": "mods/samples/heal-on-kill.js",
+    "request": "heal on kill",
+    "prefix": "sample",
+    "file": "sample-heal-on-kill.js",
+    "included": true
+  },
+  {
+    "path": "mods/generated/enemies-split-in-two-when-hit-2026-10-28T06-11-23-763Z.js",
+    "request": "enemies split in two when hit",
+    "prefix": "generated",
+    "file": "generated-enemies-split-in-two-when-hit.js",
+    "included": true
+  },
+  {
+    "path": "mods/generated/gravity-pulls-everything-toward-the-center-2026-10-28T06-13-21-500Z.js",
+    "request": "gravity pulls everything toward the center",
+    "prefix": "generated",
+    "file": "generated-gravity-pulls-everything-toward-the-center.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-40-55-414Z/00.js",
+    "request": "enemies explode into 3 tiny ones when they die",
+    "prefix": "bench-2026-10-28-00",
+    "file": "bench-2026-10-28-00-enemies-explode-into-3-tiny-ones-when-they-die.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-40-55-414Z/01.js",
+    "request": "make the player HUGE",
+    "prefix": "bench-2026-10-28-01",
+    "file": "bench-2026-10-28-01-make-the-player-huge.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-40-55-414Z/02.js",
+    "request": "every 5 seconds everything goes slow mo for 1 second",
+    "prefix": "bench-2026-10-28-02",
+    "file": "bench-2026-10-28-02-every-5-seconds-everything-goes-slow-mo-for-1-second.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-40-55-414Z/03.js",
+    "request": "enemies run AWAY from you lol",
+    "prefix": "bench-2026-10-28-03",
+    "file": "bench-2026-10-28-03-enemies-run-away-from-you-lol.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-40-55-414Z/04.js",
+    "request": "bullets bounce off the walls",
+    "prefix": "bench-2026-10-28-04",
+    "file": "bench-2026-10-28-04-bullets-bounce-off-the-walls.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/06.js",
+    "request": "rainbow enemies that keep changing color",
+    "prefix": "bench-2026-10-28-06",
+    "file": "bench-2026-10-28-06-rainbow-enemies-that-keep-changing-color.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/07.js",
+    "request": "lava on the left half of the map",
+    "prefix": "bench-2026-10-28-07",
+    "file": "bench-2026-10-28-07-lava-on-the-left-half-of-the-map.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/08.js",
+    "request": "slow motion when my hp is low",
+    "prefix": "bench-2026-10-28-08",
+    "file": "bench-2026-10-28-08-slow-motion-when-my-hp-is-low.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/09.js",
+    "request": "heal 1 hp every second",
+    "prefix": "bench-2026-10-28-09",
+    "file": "bench-2026-10-28-09-heal-1-hp-every-second.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/10.js",
+    "request": "the arena keeps shrinking",
+    "prefix": "bench-2026-10-28-10",
+    "file": "bench-2026-10-28-10-the-arena-keeps-shrinking.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/11.js",
+    "request": "enemies get faster every time you kill one",
+    "prefix": "bench-2026-10-28-11",
+    "file": "bench-2026-10-28-11-enemies-get-faster-every-time-you-kill-one.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/12.js",
+    "request": "health pickups chase the player",
+    "prefix": "bench-2026-10-28-12",
+    "file": "bench-2026-10-28-12-health-pickups-chase-the-player.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/13.js",
+    "request": "wrap around the screen edges like asteroids",
+    "prefix": "bench-2026-10-28-13",
+    "file": "bench-2026-10-28-13-wrap-around-the-screen-edges-like-asteroids.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/14.js",
+    "request": "random meteor showers",
+    "prefix": "bench-2026-10-28-14",
+    "file": "bench-2026-10-28-14-random-meteor-showers.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/15.js",
+    "request": "killed enemies come back once as green ghosts",
+    "prefix": "bench-2026-10-28-15",
+    "file": "bench-2026-10-28-15-killed-enemies-come-back-once-as-green-ghosts.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/16.js",
+    "request": "moon gravity pls",
+    "prefix": "bench-2026-10-28-16",
+    "file": "bench-2026-10-28-16-moon-gravity-pls.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/17.js",
+    "request": "boss fight: a giant enemy with 500 hp every 30 seconds",
+    "prefix": "bench-2026-10-28-17",
+    "file": "bench-2026-10-28-17-boss-fight-a-giant-enemy-with-500-hp-every-30-seconds.js",
+    "included": true
+  },
+  {
+    "path": "bench-results/2026-10-28T07-43-53-117Z/18.js",
+    "request": "enemies orbit around the player instead of charging",
+    "prefix": "bench-2026-10-28-18",
+    "file": "bench-2026-10-28-18-enemies-orbit-around-the-player-instead-of-charging.js",
+    "included": true
+  }
+]

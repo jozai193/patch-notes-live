@@ -33,7 +33,7 @@
         <canvas
           id="game"
           width="960"
-          height="600"
+          height="500"
           tabindex="0"
           aria-label="Game arena. WASD moves, mouse aims, hold left click to shoot. B toggles bot. R restarts with active patches."
         ></canvas>
@@ -51,6 +51,55 @@
           </div>
           <button id="restart" type="button">RESTART RUN <kbd>R</kbd></button>
         </section>
+      </section>
+      <form id="rule-form" class="rule-form" aria-label="Suggest a game rule">
+        <label class="rule-entry"
+          ><span>REWRITE THE RULES <small id="rule-mode">ARCHIVE MODE</small></span
+          ><input
+            id="rule-input"
+            maxlength="200"
+            required
+            placeholder="Try ‘make the player huge’"
+            autocomplete="off"
+            aria-label="Game rule"
+        /></label>
+        <label class="author-entry"
+          ><span>YOUR NAME</span
+          ><input
+            id="rule-author"
+            maxlength="80"
+            placeholder="You"
+            aria-label="Your name (optional)"
+            autocomplete="off"
+        /></label>
+        <button id="rule-submit" type="submit">PATCH IT <span>↵</span></button>
+      </form>
+      <div id="demo-badge" class="demo-badge">
+        Web demo: patches come from an archive of AI-written mods. Run locally for live Codex
+        patching.
+      </div>
+      <section
+        id="compile-panel"
+        class="compile-panel"
+        aria-label="Compiling patch"
+        aria-live="polite"
+        hidden
+      >
+        <div class="panel-heading">
+          <h2>COMPILING PATCH</h2>
+          <span id="compile-time">0s</span>
+        </div>
+        <p id="compile-request"></p>
+        <ol id="compile-steps"></ol>
+        <progress id="compile-progress" max="100" value="0" aria-label="Patch progress"></progress>
+        <p id="compile-message"></p>
+      </section>
+      <section id="first-run" class="first-run" aria-label="How to play" hidden>
+        <strong>THE RULES ARE YOURS.</strong>
+        <p>1. Survive.</p>
+        <p>2. Type a rule like 'enemies run away from you'.</p>
+        <p>3. Watch AI rewrite the game.</p>
+        <button id="first-run-dismiss" type="button">LET’S PLAY</button>
       </section>
       <aside class="sidebar" aria-label="Run information">
         <section class="panel telemetry">
@@ -86,6 +135,13 @@
           <div id="active-patches"><p>No active patches. The base rules are in play.</p></div>
           <p id="server-status">Standalone · connecting to hub</p>
           <div class="base-rule"><span class="tiny-dot"></span> BASE GAME <span>v1.0</span></div>
+        </section>
+        <section class="panel archive-panel">
+          <div class="panel-heading">
+            <h2>ARCHIVE</h2>
+            <span id="archive-count"></span>
+          </div>
+          <div id="archive-list" aria-label="Archived patches"></div>
         </section>
         <button id="bot-toggle" class="bot-toggle" type="button" aria-pressed="false">
           <span class="bot-icon">⌘</span

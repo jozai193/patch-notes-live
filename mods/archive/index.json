@@ -1,0 +1,307 @@
+[
+  {
+    "file": "sample-split-on-hit.js",
+    "name": "Split on hit",
+    "request": "split on hit",
+    "patchNotes": "Enemies now split into two smaller, angrier enemies. We are not sorry.",
+    "tags": [
+      "split",
+      "hit"
+    ]
+  },
+  {
+    "file": "sample-gravity-flip-every-10s.js",
+    "name": "Gravity flip every 10s",
+    "request": "gravity flip every 10s",
+    "patchNotes": "Gravity has been placed on a ten-second rotation. Please secure all loose enemies.",
+    "tags": [
+      "gravity",
+      "flip",
+      "10s"
+    ]
+  },
+  {
+    "file": "sample-floor-is-lava.js",
+    "name": "Floor is lava",
+    "request": "floor is lava",
+    "patchNotes": "The floor has failed its safety inspection. Orange means run.",
+    "tags": [
+      "floor",
+      "lava"
+    ]
+  },
+  {
+    "file": "sample-enemies-tiny-and-fast.js",
+    "name": "Enemies tiny and fast",
+    "request": "enemies tiny and fast",
+    "patchNotes": "Enemies are now travel-sized. Unfortunately, their anger is full-sized.",
+    "tags": [
+      "enemy",
+      "tiny",
+      "fast"
+    ]
+  },
+  {
+    "file": "sample-heal-on-kill.js",
+    "name": "Heal on kill",
+    "request": "heal on kill",
+    "patchNotes": "Defeating enemies now improves your health. Our doctors have questions.",
+    "tags": [
+      "heal",
+      "kill"
+    ]
+  },
+  {
+    "file": "generated-enemies-split-in-two-when-hit.js",
+    "name": "Split on hit",
+    "request": "enemies split in two when hit",
+    "patchNotes": "Split on hit is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "enemy",
+      "split",
+      "two",
+      "hit"
+    ]
+  },
+  {
+    "file": "generated-gravity-pulls-everything-toward-the-center.js",
+    "name": "Center gravity",
+    "request": "gravity pulls everything toward the center",
+    "patchNotes": "Gravity has been reassigned. Please direct complaints toward the ceiling.",
+    "tags": [
+      "gravity",
+      "pulls",
+      "toward",
+      "center"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-00-enemies-explode-into-3-tiny-ones-when-they-die.js",
+    "name": "Three tiny enemies",
+    "request": "enemies explode into 3 tiny ones when they die",
+    "patchNotes": "Three tiny enemies is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "enemy",
+      "explode",
+      "3",
+      "tiny",
+      "ones",
+      "they",
+      "die"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-01-make-the-player-huge.js",
+    "name": "Huge player",
+    "request": "make the player HUGE",
+    "patchNotes": "Player size increased. Doorways are no longer covered by the warranty.",
+    "tags": [
+      "player",
+      "huge"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-02-every-5-seconds-everything-goes-slow-mo-for-1-second.js",
+    "name": "Five-second slow motion",
+    "request": "every 5 seconds everything goes slow mo for 1 second",
+    "patchNotes": "Five-second slow motion is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "5",
+      "seconds",
+      "goes",
+      "slow",
+      "mo",
+      "1",
+      "second"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-03-enemies-run-away-from-you-lol.js",
+    "name": "Enemies run away",
+    "request": "enemies run AWAY from you lol",
+    "patchNotes": "Enemies have discovered self-preservation. We are deeply disappointed.",
+    "tags": [
+      "enemy",
+      "run",
+      "away",
+      "player"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-04-bullets-bounce-off-the-walls.js",
+    "name": "Bouncing bullets",
+    "request": "bullets bounce off the walls",
+    "patchNotes": "Bouncing bullets is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "bullet",
+      "bounce",
+      "off",
+      "walls"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-06-rainbow-enemies-that-keep-changing-color.js",
+    "name": "Rainbow enemies",
+    "request": "rainbow enemies that keep changing color",
+    "patchNotes": "Enemies now come in every color of the rage spectrum.",
+    "tags": [
+      "rainbow",
+      "enemy",
+      "that",
+      "keep",
+      "changing"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-07-lava-on-the-left-half-of-the-map.js",
+    "name": "Lava on the left",
+    "request": "lava on the left half of the map",
+    "patchNotes": "The floor is now a management decision. Please walk it off.",
+    "tags": [
+      "lava",
+      "left",
+      "half",
+      "arena"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-08-slow-motion-when-my-hp-is-low.js",
+    "name": "Low-health slow motion",
+    "request": "slow motion when my hp is low",
+    "patchNotes": "Low-health slow motion is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "slow",
+      "motion",
+      "hp",
+      "low"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-09-heal-1-hp-every-second.js",
+    "name": "Slow regeneration",
+    "request": "heal 1 hp every second",
+    "patchNotes": "One health point per second. Please form an orderly queue for immortality.",
+    "tags": [
+      "heal",
+      "1",
+      "hp",
+      "second"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-10-the-arena-keeps-shrinking.js",
+    "name": "Shrinking arena",
+    "request": "the arena keeps shrinking",
+    "patchNotes": "Shrinking arena is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "arena",
+      "keeps",
+      "shrinking"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-11-enemies-get-faster-every-time-you-kill-one.js",
+    "name": "Revenge rush",
+    "request": "enemies get faster every time you kill one",
+    "patchNotes": "Revenge rush is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "enemy",
+      "get",
+      "fast",
+      "time",
+      "player",
+      "kill",
+      "one"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-12-health-pickups-chase-the-player.js",
+    "name": "Health pickups chase the player",
+    "request": "health pickups chase the player",
+    "patchNotes": "One health point per second. Please form an orderly queue for immortality.",
+    "tags": [
+      "heal",
+      "pickups",
+      "chase",
+      "player"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-13-wrap-around-the-screen-edges-like-asteroids.js",
+    "name": "Asteroids-style wraparound",
+    "request": "wrap around the screen edges like asteroids",
+    "patchNotes": "Asteroids-style wraparound is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "wrap",
+      "around",
+      "arena",
+      "edges",
+      "like"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-14-random-meteor-showers.js",
+    "name": "Random meteor showers",
+    "request": "random meteor showers",
+    "patchNotes": "Random meteor showers is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "random",
+      "meteor"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-15-killed-enemies-come-back-once-as-green-ghosts.js",
+    "name": "One ghostly return",
+    "request": "killed enemies come back once as green ghosts",
+    "patchNotes": "One ghostly return is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "killed",
+      "enemy",
+      "come",
+      "back",
+      "once",
+      "as",
+      "green",
+      "ghost"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-16-moon-gravity-pls.js",
+    "name": "Moon gravity",
+    "request": "moon gravity pls",
+    "patchNotes": "Gravity has been reassigned. Please direct complaints toward the ceiling.",
+    "tags": [
+      "gravity"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-17-boss-fight-a-giant-enemy-with-500-hp-every-30-seconds.js",
+    "name": "Thirty-second boss fight",
+    "request": "boss fight: a giant enemy with 500 hp every 30 seconds",
+    "patchNotes": "A new manager has arrived. It has 500 HP and no open-door policy.",
+    "tags": [
+      "boss",
+      "fight",
+      "huge",
+      "enemy",
+      "500",
+      "hp",
+      "30",
+      "seconds"
+    ]
+  },
+  {
+    "file": "bench-2026-10-28-18-enemies-orbit-around-the-player-instead-of-charging.js",
+    "name": "Orbiting enemies",
+    "request": "enemies orbit around the player instead of charging",
+    "patchNotes": "Orbiting enemies is now official policy. Balance has been notified and is refusing to comment.",
+    "tags": [
+      "enemy",
+      "orbit",
+      "around",
+      "player",
+      "instead",
+      "charging"
+    ]
+  }
+]

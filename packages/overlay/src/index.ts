@@ -10,7 +10,9 @@ import { interpolateSnapshots, MAX_FRAME_SECONDS, planFrame } from './loop.js';
 import { render } from './renderer.js';
 import { PerfReadout, RollingSamples } from './perf.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, readOptions } from './view.js';
+import { RuleUI, firstRun } from './rules.js';
 import './style.css';
+import './rules.css';
 
 function element<T extends HTMLElement>(id: string): T {
   const result = document.getElementById(id);
@@ -61,7 +63,7 @@ function notice(text: string, reverted = false, notes?: string): void {
   else noticeUntil = performance.now() + 6000;
 }
 const params = new URLSearchParams(location.search);
-const seconds = Number(params.get('patchLifetime') ?? 120);
+const seconds = Number(params.get('patchLifetime') ?? 180);
 const manager = await PatchManager.create(
   {
     applied(patch, version) {
@@ -69,7 +71,7 @@ const manager = await PatchManager.create(
       pendingNotice = {
         patchId: patch.patchId,
         text: `PATCH NOTES ${version}: ${patch.name} by ${patch.author}`,
-        notes: patch.patchNotes,
+        notes: (patch.origin === 'archive' ? 'FROM THE ARCHIVE · ' : '') + (patch.patchNotes ?? ''),
       };
 
       connection?.send({ v: 1, type: 'patchApplied', patchId: patch.patchId, version });
@@ -83,7 +85,7 @@ const manager = await PatchManager.create(
   },
   {
     lifetimeMs:
-      (Number.isFinite(seconds) && seconds >= 1 && seconds <= 3600 ? seconds : 120) * 1000,
+      (Number.isFinite(seconds) && seconds >= 1 && seconds <= 3600 ? seconds : 180) * 1000,
   },
 );
 if (options.mod)
@@ -272,16 +274,22 @@ function frame(now: number): void {
   const visible = current.gameOver ? current : interpolateSnapshots(previous, current, plan.alpha);
   render(ctx, visible, effects, { x: intent.aimX, y: intent.aimY }, options.obs, visualTime);
   updateHUD();
+  ruleUI.update(now);
   perf?.update(now, current.entities.length, manager.active.length);
   requestAnimationFrame(frame);
 }
 const frameSamples = new RollingSamples(60),
   tickSamples = new RollingSamples(180);
 async function receive(message: ServerMessage): Promise<void> {
+  if (ruleUI.receive(message)) return;
   if (message.type === 'hello') {
     const desired = new Set(message.patches.map((p) => p.patchId));
     for (const patch of manager.active)
-      if (patch.patchId !== 'local-demo' && !desired.has(patch.patchId))
+      if (
+        patch.patchId !== 'local-demo' &&
+        !patch.patchId.startsWith('archive-') &&
+        !desired.has(patch.patchId)
+      )
         manager.revert(patch.patchId, 'server reset');
     for (const patch of message.patches) {
       const reason = manager.removedReason(patch.patchId);
@@ -291,10 +299,22 @@ async function receive(message: ServerMessage): Promise<void> {
   } else if (message.type === 'applyPatch') {
     const reason = manager.removedReason(message.patchId);
     if (reason) connection?.send({ v: 1, type: 'patchReverted', patchId: message.patchId, reason });
-    else await manager.apply(message);
+    else {
+      if (current.gameOver) await restart();
+      await manager.apply(message);
+    }
   } else if (message.type === 'revertPatch') manager.revert(message.patchId, message.reason);
 }
-const server = params.get('server') ?? 'ws://localhost:8787';
+const ruleUI = new RuleUI({
+  manager,
+  send: (message) => connection?.send(message) ?? false,
+  notice,
+  ensurePlaying: async () => {
+    if (current.gameOver) await restart();
+  },
+});
+firstRun();
+const server = params.get('server') ?? (import.meta.env.PROD ? 'off' : 'ws://localhost:8787');
 let messages: Promise<unknown> = Promise.resolve();
 if (server !== 'off' && /^wss?:\/\//.test(server) && server.length <= 2048)
   connection = new HubConnection(
@@ -307,6 +327,7 @@ if (server !== 'off' && /^wss?:\/\//.test(server) && server.length <= 2048)
         );
     },
     (connected) => {
+      ruleUI.setConnected(connected);
       element('server-status').textContent = connected
         ? 'Hub connected'
         : 'Standalone · reconnecting';

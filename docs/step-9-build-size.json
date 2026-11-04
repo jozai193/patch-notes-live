@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "file": "index.html",
+      "bytes": 6835,
+      "gzipBytes": 2382
+    },
+    {
+      "file": "assets/dist-DCJ-YC0h.js",
+      "bytes": 298,
+      "gzipBytes": 222
+    },
+    {
+      "file": "assets/emscripten-module-uFzwHH0Y.wasm",
+      "bytes": 503134,
+      "gzipBytes": 234043
+    },
+    {
+      "file": "assets/emscripten-module.browser-YIdDcqRI.js",
+      "bytes": 9198,
+      "gzipBytes": 4152
+    },
+    {
+      "file": "assets/ffi-4V2b7xu3.js",
+      "bytes": 6322,
+      "gzipBytes": 1001
+    },
+    {
+      "file": "assets/index-3Q1awpjG.js",
+      "bytes": 99769,
+      "gzipBytes": 31131
+    },
+    {
+      "file": "assets/index-Crtk8Cdc.css",
+      "bytes": 12540,
+      "gzipBytes": 3542
+    },
+    {
+      "file": "assets/module-ES6BEMUI-CDTIpMiA.js",
+      "bytes": 34132,
+      "gzipBytes": 8790
+    },
+    {
+      "file": "assets/preload-helper-CRzLMJPS.js",
+      "bytes": 1534,
+      "gzipBytes": 798
+    }
+  ],
+  "totalBytes": 673762,
+  "totalGzipBytes": 286061,
+  "archiveCount": 25,
+  "gzipMethod": "Node 24 zlib.gzipSync with default options, summed per built file; Vite’s estimates may differ slightly."
+}

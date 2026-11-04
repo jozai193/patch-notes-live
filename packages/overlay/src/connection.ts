@@ -43,8 +43,10 @@ export class HubConnection {
   private retry(): void {
     if (!this.closed) this.timer = setTimeout(() => this.connect(), reconnectDelay(this.attempt++));
   }
-  send(message: ClientMessage): void {
-    if (this.socket?.readyState === WebSocket.OPEN) this.socket.send(JSON.stringify(message));
+  send(message: ClientMessage): boolean {
+    if (this.socket?.readyState !== WebSocket.OPEN) return false;
+    this.socket.send(JSON.stringify(message));
+    return true;
   }
   close(): void {
     this.closed = true;

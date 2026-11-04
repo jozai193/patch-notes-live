@@ -1,3 +1,9 @@
+export function isTypingTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    (target.matches('input,textarea,select') || target.isContentEditable)
+  );
+}
 import type { Arena, Intent } from '@patch-notes-live/engine';
 import { aimAt } from './view.js';
 
@@ -12,6 +18,10 @@ export class Controls {
     actions: { toggleBot(): void; restart(): void },
   ) {
     window.addEventListener('keydown', (event) => {
+      if (isTypingTarget(event.target)) {
+        this.reset();
+        return;
+      }
       const key = event.code;
       if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyB', 'KeyR'].includes(key)) event.preventDefault();
       this.keys.add(key);

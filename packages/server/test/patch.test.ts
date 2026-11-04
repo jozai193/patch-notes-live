@@ -260,12 +260,30 @@ describe('isolated runtime patch pipeline (fake Codex only)', () => {
         item: {
           type: 'command_execution',
           id: '3',
-          command: 'PRIVATE',
+          command: 'npm test -- PRIVATE',
           aggregated_output: 'PRIVATE',
           status: 'in_progress',
         },
       }),
-    ).toEqual({ phase: 'testing', text: 'Running a workspace command.' });
+    ).toEqual({ phase: 'testing', text: 'Running the patch tests.' });
+  });
+
+  it('labels real file writes as editing and leaves file-reading commands in thinking', () => {
+    const item = {
+      type: 'command_execution' as const,
+      id: 'x',
+      aggregated_output: 'PRIVATE',
+      status: 'in_progress' as const,
+    };
+    expect(
+      compileEvent({ type: 'item.started', item: { ...item, command: 'cat AGENTS.md' } }),
+    ).toBeUndefined();
+    expect(
+      compileEvent({
+        type: 'item.started',
+        item: { ...item, command: 'node -e writeFileSync("mod.js", PRIVATE)' },
+      }),
+    ).toEqual({ phase: 'editing', text: 'Writing the requested game rule.' });
   });
 
   it('copies the canonical API byte-for-byte at build time', async () => {

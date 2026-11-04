@@ -18,7 +18,10 @@
     "patch:revert": "node scripts/server.mjs revert",
     "verify": "node packages/harness/verify.mjs",
     "patch": "node packages/server/patch.mjs",
-    "bench": "node scripts/bench.mjs"
+    "bench": "node scripts/bench.mjs",
+    "verify:archive": "node scripts/archive.mjs",
+    "build:web": "npm run verify:archive && vite build packages/overlay --config packages/overlay/vite.config.ts --outDir ../../dist --emptyOutDir",
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

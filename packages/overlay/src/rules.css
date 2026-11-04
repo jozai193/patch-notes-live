@@ -1,0 +1,291 @@
+.rule-form {
+  position: absolute;
+  left: 24px;
+  top: 596px;
+  width: 960px;
+  height: 66px;
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  padding: 10px 12px;
+  background: #101c35;
+  border: 1px solid #28476b;
+  border-radius: 7px;
+}
+.rule-entry {
+  flex: 1;
+  min-width: 0;
+}
+.rule-form label > span {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  color: #94bddc;
+  font:
+    11px Consolas,
+    monospace;
+  letter-spacing: 0.5px;
+}
+.rule-form small {
+  font:
+    10px Consolas,
+    monospace;
+  color: #74acbb;
+  letter-spacing: 0;
+}
+.rule-form input {
+  height: 30px;
+  width: 100%;
+  font:
+    14px 'Segoe UI',
+    sans-serif;
+  background: #050c20;
+  color: #ecf7ff;
+  border: 1px solid #365277;
+  border-radius: 3px;
+  padding: 5px 9px;
+}
+.rule-form input:focus {
+  outline: 1px solid #48eaff;
+  border-color: #48eaff;
+}
+.author-entry {
+  width: 110px;
+}
+#rule-submit {
+  height: 32px;
+  border: 0;
+  border-radius: 3px;
+  padding: 0 17px;
+  background: #48eaff;
+  color: #041122;
+  font:
+    bold 13px Consolas,
+    monospace;
+  white-space: nowrap;
+}
+#rule-submit span {
+  margin-left: 9px;
+}
+#rule-submit:disabled {
+  background: #27445b;
+  color: #a0b5c8;
+  cursor: wait;
+}
+.demo-badge {
+  position: absolute;
+  left: 24px;
+  top: 671px;
+  width: 960px;
+  color: #8facc8;
+  font:
+    11px/1.4 Consolas,
+    monospace;
+}
+.playfield,
+canvas {
+  height: 500px;
+}
+.sidebar {
+  display: grid;
+  grid-template-rows: 170px 198px minmax(0, 1fr) 58px;
+  gap: 10px;
+}
+.sidebar .panel {
+  padding: 12px;
+}
+.sidebar .panel-heading {
+  margin-bottom: 8px;
+}
+.telemetry .hp-meter {
+  margin: 7px 0 8px;
+  height: 6px;
+}
+.telemetry .stats {
+  margin-bottom: 8px;
+}
+.telemetry .stats strong {
+  font-size: 26px;
+  margin-top: 4px;
+}
+.telemetry .time {
+  padding-top: 7px;
+}
+.telemetry .time strong {
+  font-size: 18px;
+}
+.hp-label {
+  font-size: 11px;
+}
+.active-patch {
+  margin: 2px 0;
+  padding: 4px 0 4px 7px;
+}
+.active-patch strong {
+  font-size: 12px;
+}
+.active-patch span,
+.active-patch small {
+  font-size: 11px;
+  line-height: 1.25;
+}
+.base-rule {
+  display: none;
+}
+#server-status {
+  font-size: 10px;
+}
+.archive-panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+#archive-list {
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #35567a transparent;
+}
+.archive-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  color: #b8d9f1;
+  border: 0;
+  border-bottom: 1px solid #28476b66;
+  padding: 7px 2px;
+  font:
+    12px/1.2 'Segoe UI',
+    sans-serif;
+}
+.archive-item:hover,
+.archive-item:focus-visible {
+  color: #48eaff;
+  background: #122c47;
+}
+#archive-count {
+  color: #94a9c9;
+  font:
+    11px Consolas,
+    monospace;
+}
+.compile-panel {
+  position: absolute;
+  z-index: 5;
+  left: 44px;
+  top: 348px;
+  width: 420px;
+  max-height: 228px;
+  padding: 14px 16px;
+  background: #060e21f5;
+  border: 1px solid #48eaff88;
+  border-left: 3px solid #48eaff;
+  border-radius: 5px;
+  box-shadow: 0 5px 30px #0008;
+  pointer-events: none;
+}
+.compile-panel h2 {
+  color: #85f0ff;
+  font-size: 12px;
+}
+#compile-time {
+  font:
+    12px Consolas,
+    monospace;
+  color: #8daaca;
+}
+.compile-panel p {
+  margin: 5px 0;
+  font:
+    12px/1.4 'Segoe UI',
+    sans-serif;
+  overflow-wrap: anywhere;
+}
+#compile-request {
+  color: #e7f5ff;
+  max-height: 52px;
+  overflow: auto;
+}
+#compile-message {
+  color: #9eb7d0;
+}
+#compile-steps {
+  display: flex;
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+  margin: 10px 0;
+  font:
+    11px Consolas,
+    monospace;
+  color: #536d90;
+}
+#compile-steps li + li:before {
+  content: '→';
+  margin-right: 10px;
+}
+#compile-steps .current {
+  color: #ffffff;
+}
+#compile-steps .done {
+  color: #48eaff;
+}
+#compile-progress {
+  width: 100%;
+  height: 5px;
+  border: 0;
+  accent-color: #48eaff;
+}
+#compile-progress::-webkit-progress-bar {
+  background: #24334c;
+}
+#compile-progress::-webkit-progress-value {
+  background: #48eaff;
+  transition: width 0.3s;
+}
+.first-run {
+  position: absolute;
+  z-index: 8;
+  left: 160px;
+  top: 172px;
+  width: 630px;
+  padding: 30px 36px;
+  border: 1px solid #48eaff88;
+  border-radius: 8px;
+  background: #081126f7;
+  box-shadow: 0 12px 70px #000c;
+}
+.first-run strong {
+  font:
+    600 18px Consolas,
+    monospace;
+  color: #48eaff;
+  letter-spacing: 2px;
+}
+.first-run p {
+  font-size: 17px;
+  line-height: 1.5;
+  color: #e4efff;
+}
+.first-run button {
+  padding: 10px 20px;
+  background: #48eaff;
+  border: 0;
+  border-radius: 3px;
+  font:
+    bold 13px Consolas,
+    monospace;
+  color: #061021;
+}
+/* Revert lives in the bottom-left slot; combo is drawn in the top-right canvas slot. */
+#patch-reverted {
+  left: 20px;
+  bottom: 18px;
+  max-width: 600px;
+}
+.obs .rule-form,
+.obs .first-run,
+.obs .demo-badge {
+  display: none;
+}

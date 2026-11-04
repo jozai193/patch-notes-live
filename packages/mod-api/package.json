@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
-    "./protocol": "./dist/protocol.js"
+    "./protocol": "./dist/protocol.js",
+    "./archive": "./dist/archive.js"
   },
   "types": "./dist/index.d.ts",
   "scripts": {

@@ -1,0 +1,7 @@
+{
+  "url": "http://localhost:4174/judges/demo/?bot=1",
+  "patches": "Huge playerby You175s remaining",
+  "message": "Loaded a patch from the archive — no live AI generation.",
+  "helpHidden": true,
+  "wasm": ["http://localhost:4174/judges/demo/assets/emscripten-module-uFzwHH0Y.wasm"]
+}

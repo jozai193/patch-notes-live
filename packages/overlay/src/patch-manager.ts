@@ -31,7 +31,7 @@ export class PatchManager {
     events: PatchEvents,
     options: { clock?: () => number; lifetimeMs?: number } = {},
   ) {
-    const lifetime = options.lifetimeMs ?? 120_000;
+    const lifetime = options.lifetimeMs ?? 180_000;
     if (!Number.isFinite(lifetime) || lifetime <= 0)
       throw new Error('Patch lifetime must be positive');
     return new PatchManager(

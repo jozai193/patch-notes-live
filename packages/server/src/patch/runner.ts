@@ -61,8 +61,19 @@ export function compileEvent(event: ThreadEvent): CompileEvent | undefined {
   if (!('item' in event)) return;
   // Never forward reasoning, agent prose, commands, tool arguments or output from the model.
   if (event.item.type === 'file_change') return { phase: 'editing', text: 'Updating patch files.' };
-  if (event.item.type === 'command_execution' && event.type === 'item.started') {
-    return { phase: 'testing', text: 'Running a workspace command.' };
+  if (
+    event.item.type === 'command_execution' &&
+    event.type === 'item.started' &&
+    /mod\.js/.test(event.item.command) &&
+    /set-content|out-file|writefile|write_text|apply_patch|>/.test(event.item.command.toLowerCase())
+  )
+    return { phase: 'editing', text: 'Writing the requested game rule.' };
+  if (
+    event.item.type === 'command_execution' &&
+    event.type === 'item.started' &&
+    /\bnpm(?:\.cmd)?\s+(?:run\s+)?test\b/.test(event.item.command)
+  ) {
+    return { phase: 'testing', text: 'Running the patch tests.' };
   }
   return;
 }

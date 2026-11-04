@@ -6,6 +6,7 @@ export interface Patch {
   patchNotes?: string | undefined;
   author: string;
   source: string;
+  origin?: 'live' | 'archive';
 }
 export interface ActivePatch {
   patchId: string;
@@ -13,12 +14,34 @@ export interface ActivePatch {
   author: string;
   remainingSeconds: number;
 }
+export type CompilePhase =
+  'queued' | 'thinking' | 'editing' | 'testing' | 'passed' | 'failed' | 'rejected' | 'quota';
+export type PatchStatus = 'ok' | 'failed' | 'rejected' | 'timeout' | 'quota';
 export type ServerMessage =
+  | {
+      v: 1;
+      type: 'compileEvent';
+      requestId: string;
+      phase: CompilePhase;
+      text: string;
+      elapsedMs: number;
+      request: string;
+      author: string;
+    }
+  | {
+      v: 1;
+      type: 'patchResult';
+      requestId: string;
+      status: PatchStatus;
+      reason: string;
+      archived: boolean;
+    }
   | { v: 1; type: 'hello'; patches: Patch[] }
   | ({ v: 1; type: 'applyPatch' } & Patch)
   | { v: 1; type: 'revertPatch'; patchId: string; reason: string }
   | { v: 1; type: 'result'; requestId: string; ok: boolean; patchId?: string; reason?: string };
 export type ClientMessage =
+  | { v: 1; type: 'requestPatch'; requestId: string; text: string; author: string }
   | { v: 1; type: 'hello'; role: 'overlay' | 'controller' }
   | { v: 1; type: 'patchApplied'; patchId: string; version: string }
   | { v: 1; type: 'patchReverted'; patchId: string; reason: string }
@@ -66,6 +89,7 @@ export function patchValid(x: unknown): x is Patch {
         x.patchNotes.length <= 140 &&
         !/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/.test(x.patchNotes))) &&
     text(x.author, 80) &&
+    (x.origin === undefined || x.origin === 'live' || x.origin === 'archive') &&
     sourceValid(x.source)
   );
 }
@@ -90,6 +114,39 @@ export function parseServerMessage(raw: string): ServerMessage | undefined {
   if (!x) return;
   const common = ['v', 'type'];
   switch (x.type) {
+    case 'compileEvent':
+      if (
+        keys(x, [...common, 'requestId', 'phase', 'text', 'elapsedMs', 'request', 'author']) &&
+        id(x.requestId) &&
+        [
+          'queued',
+          'thinking',
+          'editing',
+          'testing',
+          'passed',
+          'failed',
+          'rejected',
+          'quota',
+        ].includes(String(x.phase)) &&
+        text(x.text, 512) &&
+        text(x.request, 200) &&
+        text(x.author, 80) &&
+        number(x.elapsedMs)
+      )
+        return x as unknown as ServerMessage;
+      break;
+    case 'patchResult':
+      if (
+        keys(x, [...common, 'requestId', 'status', 'reason', 'archived']) &&
+        id(x.requestId) &&
+        ['ok', 'failed', 'rejected', 'timeout', 'quota'].includes(String(x.status)) &&
+        typeof x.reason === 'string' &&
+        x.reason.length <= 512 &&
+        !/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/.test(x.reason) &&
+        typeof x.archived === 'boolean'
+      )
+        return x as unknown as ServerMessage;
+      break;
     case 'hello':
       if (
         keys(x, [...common, 'patches']) &&
@@ -98,7 +155,7 @@ export function parseServerMessage(raw: string): ServerMessage | undefined {
         x.patches.every(
           (p) =>
             patchValid(p) &&
-            keys(p, ['patchId', 'name', 'description', 'patchNotes', 'author', 'source']),
+            keys(p, ['patchId', 'name', 'description', 'patchNotes', 'author', 'source', 'origin']),
         ) &&
         new Set(x.patches.map((p) => p.patchId)).size === x.patches.length
       )
@@ -106,7 +163,16 @@ export function parseServerMessage(raw: string): ServerMessage | undefined {
       break;
     case 'applyPatch':
       if (
-        keys(x, [...common, 'patchId', 'name', 'description', 'patchNotes', 'author', 'source']) &&
+        keys(x, [
+          ...common,
+          'patchId',
+          'name',
+          'description',
+          'patchNotes',
+          'author',
+          'source',
+          'origin',
+        ]) &&
         patchValid(x)
       )
         return x as unknown as ServerMessage;
@@ -160,6 +226,17 @@ export function parseClientMessage(raw: string): ClientMessage | undefined {
         x.activePatches.length <= 3 &&
         x.activePatches.every(active) &&
         new Set(x.activePatches.map((p) => p.patchId)).size === x.activePatches.length
+      )
+        return x as unknown as ClientMessage;
+      break;
+    case 'requestPatch':
+      if (
+        keys(x, [...common, 'requestId', 'text', 'author']) &&
+        id(x.requestId) &&
+        text(x.text, 200) &&
+        typeof x.author === 'string' &&
+        x.author.length <= 80 &&
+        !/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/.test(x.author)
       )
         return x as unknown as ClientMessage;
       break;
