@@ -72,7 +72,10 @@ export class PatchManager {
       }
       this.count++;
       this.entries.set(patch.patchId, {
-        patch,
+        patch: {
+          ...patch,
+          patchNotes: this.host.mods.find((m) => m.patchId === patch.patchId)?.patchNotes,
+        },
         expiresAt: this.clock() + this.lifetimeMs,
         applied: false,
         version: this.version,

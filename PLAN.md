@@ -2,19 +2,11 @@
 
 > Chat writes the game's rules. Codex turns them into real, sandboxed code while the game is live.
 
-**Deadlines**
+**Current targets (updated November 4)**
 
-- Next Byte Hacks V5: **Oct 31, 21:00 UTC** (Nov 1, 2:30am IST). Feature freeze and submit v1.
-- Codex x TwitchCon: **Nov 2, 2:00pm PT** (Nov 3, 3:30am IST). Final submission.
-
-**Submission must-haves (TwitchCon)**
-
-- Repo with setup instructions.
-- A YouTube video under 3 minutes showing it **working on Twitch** and **how it was built with Codex**.
-- A written description.
-- The **Codex session ID** of the thread where most of the build happened (`/status` in Codex).
-
-> **Rule to follow while building:** do most of the build inside **one long Codex thread**. That thread's session ID is part of the submission, and "how well it uses Codex" is a quarter of the score. Each step below includes a ready-to-paste Codex prompt.
+- Next Byte Hacks V5: **November 7, 5 PM EST** (user-provided deadline). Judging: innovation, technical complexity, execution/polish, and presentation, 25% each.
+- Arbiter Hacks V1, General track: **December 20**.
+- Twitch is optional. The primary input will be an in-game rule box in the next requested step. This step only changes visuals and the explicitly authorized visual API. Earlier Twitch-specific submission steps below are historical, pending a separate plan revision.
 
 ---
 
@@ -71,7 +63,7 @@ scripts/       token helper, latency benchmark, demo seeding
 **Mod API v1 (keep it this small at first)**
 
 ```ts
-// mods export: { name, description, hooks }
+// mods export: { name, description, patchNotes?: string, hooks }; notes capped at 140
 interface Hooks {
   onStart?(g: Game): void;
   onTick?(g: Game, dt: number): void;
@@ -94,6 +86,7 @@ interface Game {
   physics: { gravity: Vec; friction: number; timeScale: number };
   arena: { width: number; height: number; wrap: boolean };
   ui: { toast(text: string): void; tint(color: string, ms: number): void };
+  fx: { burst(x: number, y: number, color: string, count: number): void };
   state: Record<string, unknown>; // per-mod scratch storage
 }
 interface Entity {
@@ -109,6 +102,8 @@ interface Entity {
   speed: number;
   color: string;
   tags: string[];
+  shape?: 'circle' | 'triangle' | 'square' | 'hex' | 'star' | 'diamond';
+  glow?: number;
 }
 ```
 
@@ -119,7 +114,7 @@ interface Entity {
 1. 3,600 headless ticks (60 s) with 3 seeds and no exceptions.
 2. 95th-percentile tick time stays under budget, and the entity count stays at or under the cap.
 3. The game stays winnable: the player can survive 20 s with a scripted bot on at least 1 seed, and the run doesn't end in under 5 s.
-4. **The effect is visible:** compare 900 ticks plus initialization with a no-mod baseline using identical seed/intents on seeds 1–3. At least one seed must show player max offset >=40px, mean matched-enemy offset >=20px, entity count difference >=3, any entity color change, radius difference >=2px, physics/arena changes, or at least one toast/tint. Report all measurements and recommend making effects visible within 10 seconds.
+4. **The effect is visible:** compare 900 ticks plus initialization with a no-mod baseline using identical seed/intents on seeds 1–3. At least one seed must show player max offset >=40px, mean matched-enemy offset >=20px, entity count difference >=3, any entity color change, radius difference >=2px, shape/glow changes, physics/arena changes, or at least one toast/tint/burst. Report all measurements and recommend making effects visible within 10 seconds.
 5. Static checks: no `while(true)`; file size under 8 KB; exports match the schema.
 
 ---
@@ -202,6 +197,15 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
 - `npm run dev` starts hub and overlay via a Node launcher. Support patch:apply, patch:revert, and patch generation with --apply. Standalone overlay operation and reconnect backoff remain supported. Show apply cards and red revert banners.
 - Add time-bomb.js: passes the fixed 60-second harness, throws after game time 70s, and is reverted by the live watchdog.
 - **Done when:** tsc, full npm test and lint pass; live split-on-hit applies without reload; fourth apply expires oldest; time bomb auto-reverts around 70s with its banner. Do not start Step 9.
+
+### Step 8.5: Visual overhaul
+
+- Procedural neon arena art only: cached offscreen glow sprites, ship/hex/triangle/diamond/pool silhouettes, trails, floating damage, kill combo, wave banners, and 600ms patch rewrite glitches. No image assets. Respect entity colors.
+- Add optional Entity shape (circle/triangle/square/hex/star/diamond) and glow (0..1); add g.fx.burst(x,y,color,count), capped at 40 per call and 120 per tick. These are renderer UI events and count as visible harness effects, as do shape/glow changes.
+- Optional mod patchNotes is stripped of control characters and capped at 140 characters. Carry it through sandbox metadata/protocol to the patch card. Keep old mods compatible.
+- Fixed base-arena scale, centered smaller walls, dim void, larger arenas scale down, rounded size labels and dashed wrap walls. Narrow HUD at 1280x720.
+- MIT license using the git author name; update template examples and good sample notes.
+- **Done when:** tsc, full npm test, lint pass; real browser ?perf=1 shows at least 60fps with 150+ entities and three active patches; before/after screenshots saved in docs/screenshots. Commit step 8.5 only; no rule box or later step.
 
 ### Step 9: Chat intake and moderation, simulated first (Day 3)
 

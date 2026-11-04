@@ -31,7 +31,16 @@ const defaults = (id: number, kind: string, x: number, y: number): Entity => ({
   hp: kind === 'player' ? 100 : 20,
   maxHp: kind === 'player' ? 100 : 20,
   speed: kind === 'player' ? 200 : kind === 'enemy' ? 65 : 0,
-  color: kind === 'player' ? '#77ddff' : '#ff7755',
+  color:
+    kind === 'player'
+      ? '#48eaff'
+      : kind === 'pickup'
+        ? '#61ffb0'
+        : kind === 'hazard'
+          ? '#ff802e'
+          : kind === 'projectile'
+            ? '#a5f7ff'
+            : '#ff4a9e',
   tags: [],
 });
 
@@ -46,6 +55,7 @@ export class World {
   private arena: Arena = { width: 960, height: 640, wrap: false };
   private physics: Physics = { gravity: { x: 0, y: 0 }, friction: 0, timeScale: 1 };
   private events: UIEvent[] = [];
+  private burstsThisTick = 0;
   private nextId = 1;
   private ticks = 0;
   private wave = 0;
@@ -129,6 +139,11 @@ export class World {
           queued.push({ type: 'tint', color, ms });
         },
       },
+      fx: {
+        burst: (x, y, color, count) => {
+          queued.push({ type: 'burst', x, y, color, count });
+        },
+      },
       state: this.state,
     };
     const pendingSpawns = new Map<number, number>();
@@ -188,6 +203,8 @@ export class World {
         if (!e || !safe) return false;
         const { vx, vy, ...properties } = safe;
         Object.assign(e, properties);
+        if (e.shape === undefined) delete e.shape;
+        if (e.glow === undefined) delete e.glow;
         if (vx !== undefined) this.motion.setVelocity(e, 'x', vx);
         if (vy !== undefined) this.motion.setVelocity(e, 'y', vy);
         e.hp = Math.min(e.hp, e.maxHp);
@@ -229,6 +246,21 @@ export class World {
         if (typeof a.wrap === 'boolean') this.arena.wrap = a.wrap;
         for (const e of this.all.values()) this.bound(e);
         return true;
+      }
+      case 'burst': {
+        if (!finite(cmd.x) || !finite(cmd.y) || !color(cmd.color) || !finite(cmd.count))
+          return false;
+        const count = Math.min(120 - this.burstsThisTick, Math.floor(clamp(cmd.count, 0, 40)));
+        if (count <= 0) return false;
+        this.burstsThisTick += count;
+        this.events.push({
+          type: 'burst',
+          x: clamp(cmd.x, 0, this.arena.width),
+          y: clamp(cmd.y, 0, this.arena.height),
+          color: cmd.color,
+          count,
+        });
+        break;
       }
       case 'toast':
         if (typeof cmd.text !== 'string') return false;
@@ -291,6 +323,7 @@ export class World {
   tick(intent: Intent = IDLE_INTENT): void {
     if (this.player.hp <= 0) return;
     this.ticks++;
+    this.burstsThisTick = 0;
     this.invoke((g) => this.host.onTick?.(g, DT));
     this.flushSpawns();
     if (this.player.hp <= 0) return;

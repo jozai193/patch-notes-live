@@ -106,7 +106,7 @@ export async function verify(source: string, options: VerifyOptions = {}): Promi
       ok: !!effect,
       detail: effect
         ? `Visible effect in ${EFFECT_TICKS} ticks with the same seed and intents. ${primary.map((r) => `Seed ${r.seed}: ${effectDetail(r.visibleEffect)}`).join('; ')}.`
-        : `No clearly visible effect in ${EFFECT_TICKS} ticks. ${primary.map((r) => `Seed ${r.seed}: ${effectDetail(r.visibleEffect)}`).join('; ')}. Fix: make the effect stronger and visible within 10 seconds: player offset >=40px, mean enemy offset >=20px, entity count difference >=3, any color change, radius difference >=2px, physics/arena changes, or at least one toast/tint. Private g.state or tiny velocity changes alone are insufficient.`,
+        : `No clearly visible effect in ${EFFECT_TICKS} ticks. ${primary.map((r) => `Seed ${r.seed}: ${effectDetail(r.visibleEffect)}`).join('; ')}. Fix: make the effect stronger and visible within 10 seconds: player offset >=40px, mean enemy offset >=20px, entity count difference >=3, any color change, radius difference >=2px, shape/glow changes, physics/arena changes, or at least one toast/tint/burst. Private g.state or tiny velocity changes alone are insufficient.`,
     },
     {
       id: 'determinism',

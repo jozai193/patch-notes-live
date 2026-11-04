@@ -3,6 +3,7 @@ export interface Patch {
   patchId: string;
   name: string;
   description: string;
+  patchNotes?: string | undefined;
   author: string;
   source: string;
 }
@@ -60,6 +61,10 @@ export function patchValid(x: unknown): x is Patch {
     typeof x.description === 'string' &&
     x.description.length <= 500 &&
     !/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/.test(x.description) &&
+    (x.patchNotes === undefined ||
+      (typeof x.patchNotes === 'string' &&
+        x.patchNotes.length <= 140 &&
+        !/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/.test(x.patchNotes))) &&
     text(x.author, 80) &&
     sourceValid(x.source)
   );
@@ -91,7 +96,9 @@ export function parseServerMessage(raw: string): ServerMessage | undefined {
         Array.isArray(x.patches) &&
         x.patches.length <= 3 &&
         x.patches.every(
-          (p) => patchValid(p) && keys(p, ['patchId', 'name', 'description', 'author', 'source']),
+          (p) =>
+            patchValid(p) &&
+            keys(p, ['patchId', 'name', 'description', 'patchNotes', 'author', 'source']),
         ) &&
         new Set(x.patches.map((p) => p.patchId)).size === x.patches.length
       )
@@ -99,7 +106,7 @@ export function parseServerMessage(raw: string): ServerMessage | undefined {
       break;
     case 'applyPatch':
       if (
-        keys(x, [...common, 'patchId', 'name', 'description', 'author', 'source']) &&
+        keys(x, [...common, 'patchId', 'name', 'description', 'patchNotes', 'author', 'source']) &&
         patchValid(x)
       )
         return x as unknown as ServerMessage;

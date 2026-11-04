@@ -1,0 +1,420 @@
+{
+  "date": "2026-11-04",
+  "environment": {
+    "stage": {
+      "width": 1280,
+      "height": 720
+    },
+    "panelFits": true,
+    "devicePixelRatio": 1.0000000149011612,
+    "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+    "perf": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.046 / p95 0.300 ms\n31 entities · 3 patches\n300/300 ticks · 300/300 frames"
+  },
+  "method": "Foreground headed Chromium at 1280x720; twenty once-per-second samples of the ?perf=1 rolling 300-frame/300-tick readout, after warmup. Three real independently verified fixture mods. Mixed stationary stress entities plus normal waves/projectiles; the fixture cancels player damage.",
+  "finalRun": {
+    "samples": [
+      {
+        "time": "00:07",
+        "fps": 127.1,
+        "frameP95Ms": 13.9,
+        "sandboxMeanMs": 0.365,
+        "sandboxP95Ms": 0.6,
+        "entities": 185,
+        "patches": 3
+      },
+      {
+        "time": "00:08",
+        "fps": 132.1,
+        "frameP95Ms": 13.9,
+        "sandboxMeanMs": 0.368,
+        "sandboxP95Ms": 0.6,
+        "entities": 185,
+        "patches": 3
+      },
+      {
+        "time": "00:09",
+        "fps": 135.4,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.364,
+        "sandboxP95Ms": 0.6,
+        "entities": 184,
+        "patches": 3
+      },
+      {
+        "time": "00:10",
+        "fps": 131.3,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.379,
+        "sandboxP95Ms": 0.6,
+        "entities": 189,
+        "patches": 3
+      },
+      {
+        "time": "00:11",
+        "fps": 135,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.375,
+        "sandboxP95Ms": 0.6,
+        "entities": 189,
+        "patches": 3
+      },
+      {
+        "time": "00:12",
+        "fps": 135.4,
+        "frameP95Ms": 13.9,
+        "sandboxMeanMs": 0.37,
+        "sandboxP95Ms": 0.6,
+        "entities": 189,
+        "patches": 3
+      },
+      {
+        "time": "00:13",
+        "fps": 135.4,
+        "frameP95Ms": 13.9,
+        "sandboxMeanMs": 0.375,
+        "sandboxP95Ms": 0.6,
+        "entities": 188,
+        "patches": 3
+      },
+      {
+        "time": "00:14",
+        "fps": 135.9,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.378,
+        "sandboxP95Ms": 0.6,
+        "entities": 186,
+        "patches": 3
+      },
+      {
+        "time": "00:15",
+        "fps": 131.7,
+        "frameP95Ms": 13.9,
+        "sandboxMeanMs": 0.364,
+        "sandboxP95Ms": 0.6,
+        "entities": 186,
+        "patches": 3
+      },
+      {
+        "time": "00:16",
+        "fps": 135.8,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.359,
+        "sandboxP95Ms": 0.6,
+        "entities": 184,
+        "patches": 3
+      },
+      {
+        "time": "00:17",
+        "fps": 137.1,
+        "frameP95Ms": 8,
+        "sandboxMeanMs": 0.366,
+        "sandboxP95Ms": 0.6,
+        "entities": 182,
+        "patches": 3
+      },
+      {
+        "time": "00:18",
+        "fps": 135.5,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.363,
+        "sandboxP95Ms": 0.6,
+        "entities": 182,
+        "patches": 3
+      },
+      {
+        "time": "00:19",
+        "fps": 133.7,
+        "frameP95Ms": 13.9,
+        "sandboxMeanMs": 0.361,
+        "sandboxP95Ms": 0.6,
+        "entities": 182,
+        "patches": 3
+      },
+      {
+        "time": "00:20",
+        "fps": 133.8,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.36,
+        "sandboxP95Ms": 0.6,
+        "entities": 192,
+        "patches": 3
+      },
+      {
+        "time": "00:21",
+        "fps": 135,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.365,
+        "sandboxP95Ms": 0.6,
+        "entities": 192,
+        "patches": 3
+      },
+      {
+        "time": "00:22",
+        "fps": 133.3,
+        "frameP95Ms": 13.9,
+        "sandboxMeanMs": 0.361,
+        "sandboxP95Ms": 0.6,
+        "entities": 191,
+        "patches": 3
+      },
+      {
+        "time": "00:23",
+        "fps": 132.1,
+        "frameP95Ms": 13.9,
+        "sandboxMeanMs": 0.362,
+        "sandboxP95Ms": 0.6,
+        "entities": 191,
+        "patches": 3
+      },
+      {
+        "time": "00:24",
+        "fps": 138.9,
+        "frameP95Ms": 7.2,
+        "sandboxMeanMs": 0.362,
+        "sandboxP95Ms": 0.6,
+        "entities": 188,
+        "patches": 3
+      },
+      {
+        "time": "00:25",
+        "fps": 136.2,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.361,
+        "sandboxP95Ms": 0.6,
+        "entities": 184,
+        "patches": 3
+      },
+      {
+        "time": "00:26",
+        "fps": 131.7,
+        "frameP95Ms": 13.8,
+        "sandboxMeanMs": 0.361,
+        "sandboxP95Ms": 0.6,
+        "entities": 184,
+        "patches": 3
+      }
+    ],
+    "summary": {
+      "minFps": 127.1,
+      "maxFps": 138.9,
+      "minEntities": 182,
+      "maxEntities": 192,
+      "maxFrameP95Ms": 13.9,
+      "minSandboxMeanMs": 0.359,
+      "maxSandboxMeanMs": 0.379,
+      "maxSandboxP95Ms": 0.6,
+      "allThreePatches": true,
+      "passed": true
+    }
+  },
+  "earlierRun": {
+    "samples": [
+      {
+        "time": "01:34",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.278,
+        "sandboxP95Ms": 0.4,
+        "entities": 200,
+        "patches": 3
+      },
+      {
+        "time": "01:35",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.283,
+        "sandboxP95Ms": 0.4,
+        "entities": 199,
+        "patches": 3
+      },
+      {
+        "time": "01:36",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.279,
+        "sandboxP95Ms": 0.4,
+        "entities": 197,
+        "patches": 3
+      },
+      {
+        "time": "01:37",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.278,
+        "sandboxP95Ms": 0.4,
+        "entities": 198,
+        "patches": 3
+      },
+      {
+        "time": "01:38",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.275,
+        "sandboxP95Ms": 0.4,
+        "entities": 193,
+        "patches": 3
+      },
+      {
+        "time": "01:39",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.274,
+        "sandboxP95Ms": 0.4,
+        "entities": 189,
+        "patches": 3
+      },
+      {
+        "time": "01:40",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.275,
+        "sandboxP95Ms": 0.4,
+        "entities": 188,
+        "patches": 3
+      },
+      {
+        "time": "01:41",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.293,
+        "sandboxP95Ms": 0.4,
+        "entities": 210,
+        "patches": 3
+      },
+      {
+        "time": "01:42",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.293,
+        "sandboxP95Ms": 0.4,
+        "entities": 209,
+        "patches": 3
+      },
+      {
+        "time": "01:43",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.291,
+        "sandboxP95Ms": 0.4,
+        "entities": 204,
+        "patches": 3
+      },
+      {
+        "time": "01:44",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.288,
+        "sandboxP95Ms": 0.4,
+        "entities": 202,
+        "patches": 3
+      },
+      {
+        "time": "01:45",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.288,
+        "sandboxP95Ms": 0.4,
+        "entities": 199,
+        "patches": 3
+      },
+      {
+        "time": "01:46",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.268,
+        "sandboxP95Ms": 0.4,
+        "entities": 195,
+        "patches": 3
+      },
+      {
+        "time": "01:47",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.269,
+        "sandboxP95Ms": 0.4,
+        "entities": 191,
+        "patches": 3
+      },
+      {
+        "time": "01:48",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.273,
+        "sandboxP95Ms": 0.4,
+        "entities": 186,
+        "patches": 3
+      },
+      {
+        "time": "01:49",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.275,
+        "sandboxP95Ms": 0.4,
+        "entities": 186,
+        "patches": 3
+      },
+      {
+        "time": "01:50",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.282,
+        "sandboxP95Ms": 0.4,
+        "entities": 213,
+        "patches": 3
+      },
+      {
+        "time": "01:51",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.289,
+        "sandboxP95Ms": 0.4,
+        "entities": 208,
+        "patches": 3
+      },
+      {
+        "time": "01:52",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.292,
+        "sandboxP95Ms": 0.4,
+        "entities": 206,
+        "patches": 3
+      },
+      {
+        "time": "01:53",
+        "fps": 144,
+        "frameP95Ms": 7.1,
+        "sandboxMeanMs": 0.288,
+        "sandboxP95Ms": 0.4,
+        "entities": 204,
+        "patches": 3
+      }
+    ],
+    "summary": {
+      "minFps": 144,
+      "maxFps": 144,
+      "minEntities": 186,
+      "maxEntities": 213,
+      "maxFrameP95Ms": 7.1,
+      "minSandboxMeanMs": 0.268,
+      "maxSandboxMeanMs": 0.293,
+      "maxSandboxP95Ms": 0.4,
+      "allThreePatches": true,
+      "passed": true
+    }
+  },
+  "shadowBlurProbe": {
+    "mainCanvasShadowBlurWrites": 0,
+    "offscreenCacheShadowBlurWrites": 0,
+    "layout": {
+      "stage": {
+        "width": 1280,
+        "height": 720
+      },
+      "panelFits": true,
+      "devicePixelRatio": 1.0000000149011612,
+      "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "perf": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.046 / p95 0.300 ms\n31 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    }
+  }
+}

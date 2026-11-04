@@ -12,6 +12,8 @@ const MUTABLE_FIELDS = [
   'speed',
   'color',
   'tags',
+  'shape',
+  'glow',
 ] as const satisfies readonly (keyof EntityFields)[];
 
 /** One detached copy per entity per invocation keeps aliases and writes coherent. */

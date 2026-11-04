@@ -15,6 +15,8 @@ export interface Entity {
   speed: number;
   color: string;
   tags: string[];
+  shape?: 'circle' | 'triangle' | 'square' | 'hex' | 'star' | 'diamond' | undefined;
+  glow?: number | undefined;
 }
 export interface Intent {
   moveX: number;
@@ -43,7 +45,8 @@ export type Command =
   | { type: 'setPhysics'; physics: Partial<Physics> }
   | { type: 'setArena'; arena: Partial<Arena> }
   | { type: 'toast'; text: string }
-  | { type: 'tint'; color: string; ms: number };
+  | { type: 'tint'; color: string; ms: number }
+  | { type: 'burst'; x: number; y: number; color: string; count: number };
 export interface Game {
   time: number;
   rand(): number;
@@ -56,6 +59,7 @@ export interface Game {
   physics: Physics;
   arena: Arena;
   ui: { toast(text: string): void; tint(color: string, ms: number): void };
+  fx: { burst(x: number, y: number, color: string, count: number): void };
   state: Record<string, unknown>;
 }
 export interface ModHost {
@@ -68,7 +72,10 @@ export interface ModHost {
   onSpawn?(g: Game, e: Entity): void;
   onKill?(g: Game, e: { killer?: Entity; victim: Entity }): void;
 }
-export type UIEvent = { type: 'toast'; text: string } | { type: 'tint'; color: string; ms: number };
+export type UIEvent =
+  | { type: 'toast'; text: string }
+  | { type: 'tint'; color: string; ms: number }
+  | { type: 'burst'; x: number; y: number; color: string; count: number };
 export interface Snapshot {
   tick: number;
   time: number;

@@ -1,6 +1,8 @@
 # Patch Notes Live
 
-Steps 1–8 implement the deterministic game, playable overlay, QuickJS sandbox, verifier, patch-generation CLI, benchmark and live WebSocket hot-swap/watchdog. See [PLAN.md](PLAN.md) for later build steps.
+Steps 1–8.5 implement the deterministic game, playable overlay, QuickJS sandbox, verifier, patch-generation CLI, benchmark, live WebSocket hot-swap/watchdog, and procedural neon art. See [PLAN.md](PLAN.md) for later build steps.
+
+Current targets: Next Byte Hacks V5 (November 7, 5 PM EST; innovation, technical complexity, execution/polish and presentation weighted equally), then Arbiter Hacks V1 General (December 20). Twitch is optional; the in-game rule box is the next planned step.
 
 ## Play locally
 
@@ -24,7 +26,9 @@ Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. Pre
 - `?patchLifetime=120` configures patch lifetime in wall-clock seconds (1–3600, default 120).
 - Combine them: [OBS + bot, seed 1](http://localhost:5173/?obs=1&bot=1&seed=1).
 
-The 1280×720 stage scales to fit the window. Arena rendering keeps a fixed scale based on the base 960×640 arena: smaller arenas are centered against a dim void, while larger arenas scale down to fit. Rounded labels show arena size; a dashed wall marks wrap mode. Rendering interpolates fixed 60 Hz snapshots. Cosmetic randomness does not consume the engine RNG. The HUD shows HP, wave, score, time and patch version. Active patches show name, author and countdown; particle hooks compose alongside the sandbox.
+The 1280×720 stage scales to fit the window, with a 960×600 canvas and a narrow 252px status panel. Neon sprites are procedural: a bounded offscreen atlas bakes glow per shape/color/size and composites it additively; no external art or per-entity frame-time shadow blur. Trails, kill particles, damage numbers, combos and wave banners are render-only. A live patch gets a 600ms RGB rewrite before its card; reverts get a red rewrite.
+
+Arena rendering keeps a fixed scale based on the base 960×640 arena: smaller arenas are centered against a dim void, while larger arenas scale down to fit. Rounded labels show arena size; a dashed wall marks wrap mode. Rendering interpolates fixed 60 Hz snapshots. Cosmetic randomness does not consume the engine RNG. The HUD shows HP, wave, score, time and patch version. Active patches show name, author and countdown; particle hooks compose alongside the sandbox.
 
 ## Add to OBS
 
@@ -166,3 +170,23 @@ Game entity reads are detached and shared by entity ID within each hook invocati
 | tint duration        | 0–10,000 milliseconds                     |
 
 NaN and infinities are rejected. Text length validation is not content moderation; chat intake and UI text moderation remain later PLAN.md work. The current overlay can run the base engine or the sandboxed demo. The verifier and Codex patch CLI are implemented; Twitch integration remains a later step.
+
+## Visual mod API (Step 8.5)
+
+Optional entity fields preserve compatibility with existing mods: `shape` is circle, triangle, square, hex, star or diamond; `glow` is clamped to 0..1. An omitted shape uses the entity-kind silhouette; omitted glow uses the renderer default. Collision geometry stays circular. Changes are journaled and restored when a patch is removed.
+
+`g.fx.burst(x,y,color,count)` queues a cosmetic UI event (40 particles per call, 120 per simulation tick shared across all patches). It does not consume the engine RNG. The renderer drains events each frame. Shape, glow and bursts count toward the harness visible-effect check.
+
+Mods may export a family-friendly `patchNotes` string. The sandbox strips control characters and caps it at 140 characters. The verified metadata travels through the hub and is displayed as plain text under the PATCH NOTES heading.
+
+See [before/after screenshots and measured validation](docs/step-8.5-validation.md). To reproduce the load run, start `npm run dev`, open `http://localhost:5173/?bot=1&seed=1&perf=1&patchLifetime=600` and apply:
+
+```sh
+npm run patch:apply -- scripts/fixtures/visual-stress-field.js --author "render probe"
+npm run patch:apply -- scripts/fixtures/visual-stress-color.js --author "render probe"
+npm run patch:apply -- scripts/fixtures/visual-stress-sparks.js --author "render probe"
+```
+
+These are measurement fixtures, not normal rules: the field seeds 180 mixed entities and cancels player damage to keep the load test alive. Wait for caches and the 300-tick readout to warm up; keep the tab foregrounded. FPS depends on hardware and display refresh. Remove the fixtures or restart the hub afterward.
+
+Licensed under the [MIT License](LICENSE).

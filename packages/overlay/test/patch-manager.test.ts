@@ -137,10 +137,10 @@ it('the valid time bomb survives the verifier horizon and is reverted live at ab
 });
 it('keeps a fixed base scale for smaller arenas, scales down larger arenas and bounds reconnect backoff', () => {
   expect(arenaView({ width: 480, height: 320, wrap: false })).toEqual({
-    scale: 0.875,
-    x: 210,
-    y: 140,
+    scale: 0.9375,
+    x: 255,
+    y: 150,
   });
-  expect(arenaView({ width: 1920, height: 640, wrap: true }).scale).toBe(0.4375);
+  expect(arenaView({ width: 1920, height: 640, wrap: true }).scale).toBe(0.5);
   expect([0, 1, 2, 20].map(reconnectDelay)).toEqual([500, 1000, 2000, 10000]);
 });

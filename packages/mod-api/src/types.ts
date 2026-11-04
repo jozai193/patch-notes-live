@@ -17,6 +17,7 @@ export interface ModInfo {
   id: number;
   name: string;
   description: string;
+  patchNotes?: string | undefined;
   hooks: HookName[];
   faultCount: number;
   consecutiveFaults: number;

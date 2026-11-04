@@ -1,7 +1,7 @@
 import type { Arena, Vec } from '@patch-notes-live/engine';
 
-export const CANVAS_WIDTH = 840;
-export const CANVAS_HEIGHT = 560;
+export const CANVAS_WIDTH = 960;
+export const CANVAS_HEIGHT = 600;
 
 export function arenaView(arena: Arena) {
   const scale = Math.min(

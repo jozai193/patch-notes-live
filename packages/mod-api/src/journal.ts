@@ -1,13 +1,13 @@
 import type { Entity, Game } from '@patch-notes-live/engine';
 
-type Value = number | string | boolean | string[];
+type Value = number | string | boolean | string[] | undefined;
 interface Layer {
   base: Value;
   owners: Map<number, Value>;
   entity?: number;
   field: string;
 }
-const RULE_FIELDS = ['radius', 'speed', 'color', 'tags', 'maxHp'] as const;
+const RULE_FIELDS = ['radius', 'speed', 'color', 'tags', 'maxHp', 'shape', 'glow'] as const;
 const copy = (v: Value): Value => (Array.isArray(v) ? [...v] : v);
 const same = (a: Value, b: Value) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -28,7 +28,7 @@ export class RuleJournal {
       let changed = false;
       for (const owner of this.removed) changed = layer.owners.delete(owner) || changed;
       if (!changed) continue;
-      const value = [...layer.owners.values()].at(-1) ?? layer.base;
+      const value = layer.owners.size ? [...layer.owners.values()].at(-1) : layer.base;
       if (layer.entity !== undefined) {
         const entity = entities.get(layer.entity);
         if (entity) g.set(entity, { [layer.field]: copy(value) });

@@ -4,7 +4,8 @@ import type { ServerMessage } from '@patch-notes-live/mod-api/protocol';
 import { PatchManager } from './patch-manager.js';
 import { HubConnection } from './connection.js';
 import { Controls } from './controls.js';
-import { Effects, Feedback } from './effects.js';
+import { Effects } from './effects.js';
+import { Feedback } from './feedback.js';
 import { interpolateSnapshots, MAX_FRAME_SECONDS, planFrame } from './loop.js';
 import { render } from './renderer.js';
 import { PerfReadout, RollingSamples } from './perf.js';
@@ -42,9 +43,18 @@ let effects = new Effects();
 let connection: HubConnection | undefined;
 let noticeUntil = 0;
 let revertUntil = 0;
-function notice(text: string, reverted = false): void {
+let pendingNotice: { patchId: string; text: string; notes: string | undefined } | undefined;
+
+function notice(text: string, reverted = false, notes?: string): void {
   const node = element(reverted ? 'patch-reverted' : 'patch-notice');
-  node.textContent = text;
+  const title = document.createElement('strong');
+  title.textContent = text;
+  node.replaceChildren(title);
+  if (notes) {
+    const detail = document.createElement('span');
+    detail.textContent = notes;
+    node.append(detail);
+  }
   node.classList.toggle('reverted', reverted);
   node.hidden = false;
   if (reverted) revertUntil = performance.now() + 8000;
@@ -55,10 +65,18 @@ const seconds = Number(params.get('patchLifetime') ?? 120);
 const manager = await PatchManager.create(
   {
     applied(patch, version) {
-      notice(`PATCH NOTES ${version}: ${patch.name} by ${patch.author}`);
+      effects.rewrite(patch.name);
+      pendingNotice = {
+        patchId: patch.patchId,
+        text: `PATCH NOTES ${version}: ${patch.name} by ${patch.author}`,
+        notes: patch.patchNotes,
+      };
+
       connection?.send({ v: 1, type: 'patchApplied', patchId: patch.patchId, version });
     },
     reverted(patchId, reason) {
+      if (pendingNotice?.patchId === patchId) pendingNotice = undefined;
+      effects.rewrite(reason, true);
       notice(`PATCH REVERTED: ${reason}`, true);
       connection?.send({ v: 1, type: 'patchReverted', patchId, reason });
     },
@@ -167,12 +185,16 @@ function clock(seconds: number): string {
 }
 
 function updateHUD(): void {
+  if (pendingNotice && !effects.rewriting) {
+    notice(pendingNotice.text, false, pendingNotice.notes);
+    pendingNotice = undefined;
+  }
   hp.textContent = `${Math.ceil(current.player.hp)} / ${current.player.maxHp}`;
   hpMeter.setAttribute('aria-valuemax', String(current.player.maxHp));
   hpMeter.setAttribute('aria-valuenow', String(current.player.hp));
   hpFill.style.width = `${(current.player.hp / current.player.maxHp) * 100}%`;
   hpFill.style.backgroundColor =
-    current.player.hp <= current.player.maxHp * 0.3 ? '#ff886c' : '#85ead0';
+    current.player.hp <= current.player.maxHp * 0.3 ? '#ff617a' : '#48eaff';
   wave.textContent = String(Math.max(1, current.wave)).padStart(2, '0');
   score.textContent = String(current.score).padStart(4, '0');
   time.textContent = clock(current.time);
@@ -240,7 +262,9 @@ function frame(now: number): void {
     manager.observeTick(current.tick);
     effects.observe(previous, current);
   }
-  feedback.accept(world.drainEvents());
+  const events = world.drainEvents();
+  feedback.accept(events);
+  effects.accept(events);
   feedback.update(elapsed);
   effects.update(elapsed);
   visualTime += elapsed;
@@ -248,7 +272,7 @@ function frame(now: number): void {
   const visible = current.gameOver ? current : interpolateSnapshots(previous, current, plan.alpha);
   render(ctx, visible, effects, { x: intent.aimX, y: intent.aimY }, options.obs, visualTime);
   updateHUD();
-  perf?.update(now);
+  perf?.update(now, current.entities.length, manager.active.length);
   requestAnimationFrame(frame);
 }
 const frameSamples = new RollingSamples(60),

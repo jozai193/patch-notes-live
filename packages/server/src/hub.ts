@@ -54,10 +54,11 @@ export async function createHub(options: { port?: number; log?: (text: string) =
       return;
     }
     const host = await SandboxHost.create([message.source]);
-    let name: string, description: string;
+    let name: string, description: string, patchNotes: string | undefined;
     try {
       name = clean(host.mods[0]!.name, 100) || 'Untitled patch';
       description = clean(host.mods[0]!.description, 500);
+      patchNotes = host.mods[0]!.patchNotes;
     } finally {
       host.dispose();
     }
@@ -66,6 +67,7 @@ export async function createHub(options: { port?: number; log?: (text: string) =
       patchId: randomUUID(),
       name,
       description,
+      ...(patchNotes === undefined ? {} : { patchNotes }),
       author: message.author,
       source: message.source,
     };

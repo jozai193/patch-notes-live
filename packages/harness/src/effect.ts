@@ -7,6 +7,8 @@ export function emptyEffect(): VisibleEffect {
     meanEnemyOffset: 0,
     maxEntityCountDifference: 0,
     colorChanged: false,
+    shapeChanged: false,
+    glowChanged: false,
     maxRadiusDifference: 0,
     physicsChanged: false,
     arenaChanged: false,
@@ -21,6 +23,8 @@ export function visible(effect: VisibleEffect): boolean {
     effect.meanEnemyOffset >= 20 ||
     effect.maxEntityCountDifference >= 3 ||
     effect.colorChanged ||
+    effect.shapeChanged ||
+    effect.glowChanged ||
     effect.maxRadiusDifference >= 2 ||
     effect.physicsChanged ||
     effect.arenaChanged ||
@@ -53,6 +57,8 @@ export class EffectTracker {
         this.enemyDistance += Math.hypot(entity.x - other.x, entity.y - other.y);
         this.enemySamples++;
       }
+      m.shapeChanged ||= entity.shape !== other.shape;
+      m.glowChanged ||= entity.glow !== other.glow;
       m.colorChanged ||= entity.color !== other.color;
       m.maxRadiusDifference = Math.max(
         m.maxRadiusDifference,
@@ -67,5 +73,5 @@ export class EffectTracker {
 }
 
 export function effectDetail(m: VisibleEffect): string {
-  return `player max offset ${m.playerMaxOffset.toFixed(2)}px, mean enemy offset ${m.meanEnemyOffset.toFixed(2)}px, count difference ${m.maxEntityCountDifference}, radius difference ${m.maxRadiusDifference.toFixed(2)}px, color ${m.colorChanged}, physics ${m.physicsChanged}, arena ${m.arenaChanged}, UI events ${m.uiEvents}`;
+  return `player max offset ${m.playerMaxOffset.toFixed(2)}px, mean enemy offset ${m.meanEnemyOffset.toFixed(2)}px, count difference ${m.maxEntityCountDifference}, radius difference ${m.maxRadiusDifference.toFixed(2)}px, color ${m.colorChanged}, shape ${m.shapeChanged}, glow ${m.glowChanged}, physics ${m.physicsChanged}, arena ${m.arenaChanged}, UI events ${m.uiEvents}`;
 }

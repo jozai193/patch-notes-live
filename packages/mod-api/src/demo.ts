@@ -1,5 +1,6 @@
 export const SPLIT_ON_HIT = `export default {
   name: 'Split on hit',
+  patchNotes: 'Enemies now split into two smaller, angrier enemies. We are not sorry.',
   description: 'Enemies break into two smaller enemies when shot.',
   hooks: {
     onStart(g) { g.ui.toast('Split on hit: every enemy has a second act.'); },

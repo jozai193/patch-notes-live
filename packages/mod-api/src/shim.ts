@@ -35,7 +35,7 @@ export const SHIM = String.raw`
     }
   };
   const clone = value => parse(stringify(value));
-  const mutable = ['x','y','vx','vy','radius','hp','maxHp','speed','color','tags'];
+  const mutable = ['x','y','vx','vy','radius','hp','maxHp','speed','color','tags','shape','glow'];
   const hookNames = ['onStart','onTick','onHit','onSpawn','onKill'];
   let hooks, state = Object.create(null), gameTime = 0, nextId = -1;
   const spawned = new Map();
@@ -66,6 +66,9 @@ export const SHIM = String.raw`
       const mod = namespace.default;
       const name = mod && descriptor(mod,'name')?.value;
       const description = mod && descriptor(mod,'description')?.value;
+      const notes = mod && descriptor(mod,'patchNotes');
+      if (notes && typeof notes.value !== 'string') throw Error('Invalid patchNotes');
+      const patchNotes = notes ? notes.value.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g,'').slice(0,140) : undefined;
       const supplied = mod && descriptor(mod,'hooks')?.value;
       if (typeof name !== 'string' || !name.length || name.length > 80 || typeof description !== 'string' ||
           description.length > 256 || !supplied || typeof supplied !== 'object' || Array.isArray(supplied)) throw Error('Invalid mod export');
@@ -75,7 +78,7 @@ export const SHIM = String.raw`
         if (!hookNames.includes(key) || typeof value !== 'function') throw Error('Invalid hook: ' + key);
         hooks[key] = value;
       }
-      return stringify({ name, description, hooks: keys(hooks) });
+      return stringify({ name, description, patchNotes, hooks: keys(hooks) });
     }),
     call: safe(text => {
       const payload = parse(text);
@@ -105,7 +108,7 @@ export const SHIM = String.raw`
           if (++spawnCount > 32) throw Error('Spawn limit exceeded');
           const id = nextId--;
           const copy = track({ id, kind, x: player.x, y: player.y, vx: 0, vy: 0, radius: 12,
-            hp: 20, maxHp: 20, speed: kind === 'enemy' ? 65 : 0, color: '#ff7755', tags: [], ...clone(opts) });
+            hp: 20, maxHp: 20, speed: kind === 'enemy' ? 65 : 0, color: kind === 'pickup' ? '#61ffb0' : kind === 'hazard' ? '#ff802e' : '#ff4a9e', tags: [], ...clone(opts) });
           push({ type: 'spawn', id, kind, opts: clone(opts) }); spawned.set(id, copy);
           return copy;
         },
@@ -127,6 +130,7 @@ export const SHIM = String.raw`
           },
           tint(color, ms) { push({ type: 'tint', color, ms }); }
         },
+        fx: { burst(x,y,color,count) { push({type:'burst',x,y,color,count}); } },
         state,
       };
       const physicsBefore = stringify(g.physics), arenaBefore = stringify(g.arena);

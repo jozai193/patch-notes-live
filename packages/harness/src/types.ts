@@ -22,6 +22,8 @@ export interface VisibleEffect {
   meanEnemyOffset: number;
   maxEntityCountDifference: number;
   colorChanged: boolean;
+  shapeChanged: boolean;
+  glowChanged: boolean;
   maxRadiusDifference: number;
   physicsChanged: boolean;
   arenaChanged: boolean;

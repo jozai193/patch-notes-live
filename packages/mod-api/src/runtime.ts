@@ -92,6 +92,13 @@ export class ModRuntime {
               throw new InvalidResult('Invalid mod metadata');
             this.info.name = value.name;
             this.info.description = value.description;
+            if (value.patchNotes !== undefined) {
+              if (typeof value.patchNotes !== 'string')
+                throw new InvalidResult('Invalid patchNotes');
+              this.info.patchNotes = value.patchNotes
+                .replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, '')
+                .slice(0, 140);
+            }
             this.info.hooks = value.hooks as HookName[];
           } finally {
             namespace.dispose();

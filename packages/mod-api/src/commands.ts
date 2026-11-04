@@ -61,6 +61,16 @@ export function decode(text: string, onHit: boolean, playerId?: number) {
           throw new InvalidResult('Invalid arena');
         return { type: 'setArena' as const, arena: a as unknown as Arena };
       }
+      case 'burst':
+        if (
+          !number(cmd.x) ||
+          !number(cmd.y) ||
+          !number(cmd.count) ||
+          typeof cmd.color !== 'string' ||
+          !/^#[0-9a-f]{6}$/i.test(cmd.color)
+        )
+          throw new InvalidResult('Invalid burst');
+        return { type: 'burst' as const, x: cmd.x, y: cmd.y, color: cmd.color, count: cmd.count };
       case 'toast':
         if (typeof cmd.text !== 'string') throw new InvalidResult('Invalid toast');
         return { type: 'toast' as const, text: cmd.text };
@@ -128,6 +138,9 @@ export function replay(
         break;
       case 'setArena':
         Object.assign(g.arena, cmd.arena);
+        break;
+      case 'burst':
+        g.fx.burst(cmd.x, cmd.y, cmd.color, cmd.count);
         break;
       case 'toast':
         g.ui.toast(cmd.text);

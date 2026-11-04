@@ -48,11 +48,11 @@ export class PerfReadout {
     this.lastUpdate = -Infinity;
   }
 
-  update(now: number): void {
+  update(now: number, entities = 0, patches = 0): void {
     if (now - this.lastUpdate < 250) return;
     this.lastUpdate = now;
     const frames = this.frames.summary(),
       ticks = this.ticks.summary();
-    this.output.textContent = `FPS ${frames.mean ? (1000 / frames.mean).toFixed(1) : '—'}  FRAME p95 ${frames.p95.toFixed(2)} ms\nSANDBOX mean ${ticks.mean.toFixed(3)} / p95 ${ticks.p95.toFixed(3)} ms\n${ticks.count}/300 ticks · ${frames.count}/300 frames`;
+    this.output.textContent = `FPS ${frames.mean ? (1000 / frames.mean).toFixed(1) : '—'}  FRAME p95 ${frames.p95.toFixed(2)} ms\nSANDBOX mean ${ticks.mean.toFixed(3)} / p95 ${ticks.p95.toFixed(3)} ms\n${entities} entities · ${patches} patches\n${ticks.count}/300 ticks · ${frames.count}/300 frames`;
   }
 }

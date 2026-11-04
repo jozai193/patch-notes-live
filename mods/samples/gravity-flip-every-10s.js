@@ -1,6 +1,7 @@
 export default {
   name: 'Gravity flip every 10s',
   description: 'Gentle damped gravity alternates down/up every ten game seconds.',
+  patchNotes: 'Gravity has been placed on a ten-second rotation. Please secure all loose enemies.',
   hooks: {
     onStart(g) {
       g.physics.friction = 1;

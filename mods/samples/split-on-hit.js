@@ -1,6 +1,7 @@
 export default {
   name: 'Split on hit',
   description: 'Shot enemies split once into two smaller enemies.',
+  patchNotes: 'Enemies now split into two smaller, angrier enemies. We are not sorry.',
   hooks: {
     onSpawn(g, enemy) {
       if (enemy.kind === 'enemy' && !enemy.tags.includes('split-child')) enemy.color = '#b69cff';

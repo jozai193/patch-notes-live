@@ -1,6 +1,7 @@
 export default {
   name: 'Floor is lava',
   description: 'Six persistent lava tiles leave broad safe routes through the arena.',
+  patchNotes: 'The floor has failed its safety inspection. Orange means run.',
   hooks: {
     onStart(g) {
       for (const y of [120, 520]) {

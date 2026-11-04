@@ -19,9 +19,18 @@ export function fields(value: unknown): EntityFields | undefined {
     hp: [0, 1000],
     maxHp: [1, 1000],
     speed: [0, 400],
+    glow: [0, 1],
   } as const;
   for (const [key, v] of Object.entries(value)) {
-    if (key in ranges && Object.hasOwn(ranges, key)) {
+    if ((key === 'shape' || key === 'glow') && v === undefined) {
+      output[key] = undefined;
+    } else if (
+      key === 'shape' &&
+      typeof v === 'string' &&
+      ['circle', 'triangle', 'square', 'hex', 'star', 'diamond'].includes(v)
+    ) {
+      output.shape = v as Entity['shape'];
+    } else if (key in ranges && Object.hasOwn(ranges, key)) {
       if (!finite(v)) return;
       const k = key as keyof typeof ranges;
       output[k] = clamp(v, ranges[k][0], ranges[k][1]);
