@@ -1,0 +1,37 @@
+{
+  "preview": "http://localhost:4173/",
+  "phone": {
+    "width": 390,
+    "scrollWidth": 390,
+    "gameTick": "0",
+    "attractTick": "126"
+  },
+  "identities": [
+    {
+      "name": "Rainbow enemies",
+      "slot": "2",
+      "rule": "rgb(241, 224, 63)",
+      "countdown": "rgb(241, 224, 63)",
+      "author": "by You (you) · archive"
+    },
+    {
+      "name": "Enemies run away",
+      "slot": "1",
+      "rule": "rgb(106, 250, 216)",
+      "countdown": "rgb(106, 250, 216)",
+      "author": "by You (you) · archive"
+    }
+  ],
+  "compile": {
+    "clientHeight": 255,
+    "scrollHeight": 255
+  },
+  "errors": [],
+  "notes": "Compile and revert screenshots use mocked protocol messages; game-two-patches uses the actual offline archive UI.",
+  "watchdog": {
+    "outcome": "reverted",
+    "banner": "Patch reverted: too slow",
+    "active": "2 / 3",
+    "perf": "FPS 122.4  FRAME p95 13.90 ms\nSANDBOX mean 3.969 / p95 6.800 ms\n180 entities · 3 patches\n179/300 ticks · 300/300 frames"
+  }
+}

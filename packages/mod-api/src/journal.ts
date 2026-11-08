@@ -17,6 +17,11 @@ export class RuleJournal {
   private readonly spawns = new Map<number, Set<number>>();
   private readonly removed = new Set<number>();
 
+  spawnedBy(entityId: number): number | undefined {
+    for (const [owner, ids] of this.spawns)
+      if (!this.removed.has(owner) && ids.has(entityId)) return owner;
+  }
+
   remove(owner: number): void {
     this.removed.add(owner);
   }

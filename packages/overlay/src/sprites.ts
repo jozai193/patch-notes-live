@@ -1,4 +1,5 @@
 import type { Entity } from '@patch-notes-live/engine';
+import { alpha } from './tokens.js';
 
 export type SpriteShape = NonNullable<Entity['shape']> | 'ship' | 'streak' | 'pool';
 export function entityShape(e: Entity): SpriteShape {
@@ -83,14 +84,14 @@ export class SpriteCache {
     h.lineWidth = 3;
     h.stroke();
     h.stroke();
-    b.fillStyle = color + '24';
+    b.fillStyle = alpha(color, 0.14);
     b.fill();
     b.strokeStyle = color;
     b.lineWidth = 1.6;
     b.stroke();
     b.scale(0.7, 0.7);
     shapePath(b, shape, r);
-    b.strokeStyle = color + '80';
+    b.strokeStyle = alpha(color, 0.5);
     b.lineWidth = 1;
     b.stroke();
     const sprite = { body, halo, extent, pixels: size * size * 2 };
@@ -109,12 +110,18 @@ export class SpriteCache {
     color: string,
     radius: number,
     glow = 0.7,
+    tint?: string,
   ): void {
     const sprite = this.get(shape, color, radius);
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     ctx.globalAlpha = glow * 0.8;
     ctx.drawImage(sprite.halo, -sprite.extent, -sprite.extent);
+    if (tint) {
+      const tinted = this.get(shape, tint, radius);
+      ctx.globalAlpha = 0.25;
+      ctx.drawImage(tinted.halo, -tinted.extent, -tinted.extent);
+    }
     ctx.globalAlpha = 1;
     ctx.drawImage(sprite.body, -sprite.extent, -sprite.extent);
     ctx.restore();

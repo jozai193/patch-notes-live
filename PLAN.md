@@ -226,6 +226,15 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
 - Regression coverage includes actual DOM focus, paused ticks, no-match rendering and layout bounding boxes. Both no-match (three chips) and compiling content must fit without scrolling at 1280x720 and 1024x768.
 - **Done when:** tsc, full npm test, lint and build:web pass; production preview with server=ws://127.0.0.1:9 survives 15s of typing and handles unknown rule → suggestion click → patch apply. Commit step 9 fixes only.
 
+### Step 9 review: Patch-notes design system and landing page
+
+- The user-authorized redesign replaces the earlier navy dashboard with the semantic warm-ink design in docs/design.md. Commit the design before UI code, then implement in a separate commit.
+- A responsive sentence-diff landing page runs a separate attract world with real archive mods; the playable world remains at tick zero until Play. OBS and play=1 bypass landing.
+- One token file serves CSS and canvas. Self-host display/body/code fonts, preserve intentional mod colors, add stable patch-slot identities and render-only spawn halos through read-only host provenance.
+- Replace cards with an edge HUD, versioned patch-notes feed, and Try one shortcuts in the rule composer. Keep feedback content fit, typing assistance, onboarding pause, offline protection, live hub and watchdog behavior.
+- Honor reduced motion, including static grid and crossfades in place of shake/tearing/typing. Show actual archive notes and plain-language labels.
+- **Done when:** tsc, full root tests, lint, web build pass; save requested desktop/phone/diff/game/compile/revert screenshots and report real 150+ entity / three-patch FPS. No push or Step 10 work.
+
 ### Step 10: Clustering and voting (Day 3)
 
 - Every 60 s round: embed the queued suggestions (`text-embedding-3-small`) and cluster them greedily (cosine ≥ 0.82). Score each cluster by unique users. The top 3 go to a vote.

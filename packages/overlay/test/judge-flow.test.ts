@@ -9,7 +9,7 @@ let hub: WebSocketServer, hubURL: string;
 beforeAll(async () => {
   server = await createServer({
     configFile: fileURLToPath(new URL('../vite.config.ts', import.meta.url)),
-    server: { host: '127.0.0.1', port: 0 },
+    server: { host: '127.0.0.1', port: 0, hmr: false, watch: null },
   });
   await server.listen();
   base = server.resolvedUrls!.local[0]!;
@@ -49,8 +49,90 @@ afterAll(async () => {
   });
   await server?.close();
 }, 15000);
+it('runs real archive patches in attract mode but leaves the playable world at tick zero until Enter', async () => {
+  await browser.go(base + '?server=off&bot=1');
+  await browser.wait("Number(document.getElementById('attract-game').dataset.tick)>10");
+  await browser.wait("Number(document.getElementById('attract-game').dataset.patches)>=2", 12000);
+  expect(await browser.evaluate("document.getElementById('game').dataset.tick")).toBe('0');
+  expect(await browser.evaluate("document.getElementById('stage').hidden")).toBe(true);
+  await browser.call('Input.dispatchKeyEvent', {
+    type: 'keyDown',
+    key: 'Enter',
+    code: 'Enter',
+    windowsVirtualKeyCode: 13,
+  });
+  await browser.call('Input.dispatchKeyEvent', {
+    type: 'keyUp',
+    key: 'Enter',
+    code: 'Enter',
+    windowsVirtualKeyCode: 13,
+  });
+  await browser.wait("Number(document.getElementById('game').dataset.tick)>0");
+  expect(await browser.evaluate("document.getElementById('landing').hidden")).toBe(true);
+  expect(await browser.evaluate("document.getElementById('patch-count').textContent")).toBe(
+    '0 / 3',
+  );
+}, 18000);
+it('fits a 390px phone and presents a static diff under reduced motion', async () => {
+  await browser.call('Emulation.setDeviceMetricsOverride', {
+    width: 390,
+    height: 844,
+    deviceScaleFactor: 1,
+    mobile: false,
+  });
+  await browser.call('Emulation.setEmulatedMedia', {
+    features: [{ name: 'prefers-reduced-motion', value: 'reduce' }],
+  });
+  try {
+    await browser.go(base + '?server=off');
+    await browser.wait("document.getElementById('hero-headline').dataset.phase==='diff'");
+    expect(
+      await browser.evaluate<boolean>('document.documentElement.scrollWidth<=innerWidth'),
+    ).toBe(true);
+    expect(await browser.evaluate("document.querySelectorAll('#hero-lines del').length")).toBe(1);
+    expect(await browser.evaluate("document.querySelectorAll('#hero-lines ins').length")).toBe(1);
+    expect(
+      await browser.evaluate(
+        "getComputedStyle(document.getElementById('notes-ticker-track')).animationName",
+      ),
+    ).toBe('none');
+    await browser.evaluate("document.getElementById('play').click()");
+    await browser.wait("Number(document.getElementById('game').dataset.tick)>0");
+  } finally {
+    await browser.call('Emulation.setEmulatedMedia', { features: [] });
+    await browser.call('Emulation.setDeviceMetricsOverride', {
+      width: 1280,
+      height: 720,
+      deviceScaleFactor: 1,
+      mobile: false,
+    });
+  }
+}, 10000);
+it('bypasses landing in OBS with transparent backgrounds and honors intentional mod colors', async () => {
+  await browser.go(base + '?server=off&obs=1&bot=1');
+  await browser.wait("Number(document.getElementById('game').dataset.tick)>0");
+  expect(await browser.evaluate("document.getElementById('landing').hidden")).toBe(true);
+  expect(
+    await browser.evaluate("getComputedStyle(document.getElementById('stage')).backgroundColor"),
+  ).toBe('rgba(0, 0, 0, 0)');
+  expect(
+    await browser.evaluate(
+      "document.getElementById('game').getContext('2d').getImageData(0,0,1,1).data[3]",
+    ),
+  ).toBe(0);
+  const colors = await browser.evaluate<{
+    base: string;
+    overridden: string;
+    danger: string;
+    ai: string;
+  }>(
+    `(async()=>{const {entityColor,theme}=await import('/src/tokens.ts');const t=theme();return {base:entityColor({kind:'enemy',color:t['engine-enemy']}),overridden:entityColor({kind:'enemy',color:t.ai}),danger:t.danger,ai:t.ai};})()`,
+  );
+  expect(colors.base).toBe(colors.danger);
+  expect(colors.overridden).toBe(colors.ai);
+}, 10000);
 it('pauses actual game ticks and HP while onboarding is visible, with no catch-up on dismissal', async () => {
-  await browser.go(base + '?server=off');
+  await browser.go(base + '?play=1&server=off');
   await browser.wait("document.getElementById('game').dataset.paused==='true'");
   const ticks = await browser.evaluate<string>("document.getElementById('game').dataset.tick");
   await browser.evaluate('new Promise(r=>setTimeout(r,1200))');
@@ -63,7 +145,7 @@ it('pauses actual game ticks and HP while onboarding is visible, with no catch-u
   ).toBeLessThan(30);
 }, 10000);
 it('focus drives the actual ship for 15s, transfers between fields, and blur restores manual control', async () => {
-  await browser.go(base + '?server=off');
+  await browser.go(base + '?play=1&server=off');
   await browser.evaluate(
     "document.getElementById('first-run-dismiss').click();document.getElementById('rule-input').focus()",
   );
@@ -84,7 +166,7 @@ it('focus drives the actual ship for 15s, transfers between fields, and blur res
   await browser.wait("document.getElementById('game').dataset.autopilot==='true'");
 }, 25000);
 it('renders a distinct no-match state with clickable suggestions and dismisses it after six seconds', async () => {
-  await browser.go(base + '?server=off');
+  await browser.go(base + '?play=1&server=off');
   await browser.evaluate(
     "document.getElementById('first-run-dismiss').click();document.getElementById('rule-input').value='turn my keyboard into a submarine';document.getElementById('rule-form').requestSubmit()",
   );
@@ -97,7 +179,7 @@ it('renders a distinct no-match state with clickable suggestions and dismisses i
   }>(
     `({title:document.querySelector('#compile-panel h2').textContent,progress:document.getElementById('compile-progress').getClientRects().length,phases:document.getElementById('compile-steps').getClientRects().length,chips:document.querySelectorAll('.archive-suggestion').length})`,
   );
-  expect(view).toEqual({ title: 'NO MATCH IN ARCHIVE', progress: 0, phases: 0, chips: 3 });
+  expect(view).toEqual({ title: 'No match in archive', progress: 0, phases: 0, chips: 3 });
   await browser.evaluate("document.querySelector('.archive-suggestion').click()");
   await browser.wait("document.getElementById('patch-count').textContent==='1 / 3'");
   await browser.evaluate(
@@ -120,10 +202,10 @@ it.each([
       deviceScaleFactor: 1,
       mobile: false,
     });
-    await browser.go(base + `?bot=1&server=${state === 'compile' ? hubURL : 'off'}`);
+    await browser.go(base + `?play=1&bot=1&server=${state === 'compile' ? hubURL : 'off'}`);
     if (state === 'compile')
       await browser.wait(
-        "document.getElementById('rule-mode').textContent.startsWith('LIVE CODEX')",
+        "document.getElementById('rule-mode').textContent.startsWith('Live Codex')",
       );
     const request =
       state === 'no-match'

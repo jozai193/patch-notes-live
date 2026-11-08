@@ -1,0 +1,27 @@
+:root {
+  --background: #151413;
+  --surface: #211f1d;
+  --text: #f3eee5;
+  --muted: #b7b0a4;
+  --you: #72d8ed;
+  --danger: #ff897d;
+  --good: #95d6a4;
+  --change: #f2c46d;
+  --ai: #c6a5f7;
+  --patch-1: #6afad8;
+  --patch-2: #f1e03f;
+  --patch-3: #f23dfe;
+  --patch-4: #679b49;
+  --patch-5: #b7f791;
+  --patch-6: #ab81ba;
+  /* Compatibility identities, not paint: preserve cached engine/mod snapshots. */
+  --engine-player: #48eaff;
+  --engine-enemy: #ff4a9e;
+  --engine-pickup: #61ffb0;
+  --engine-drop: #55ff88;
+  --engine-hazard: #ff802e;
+  --engine-projectile: #a5f7ff;
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-code: 'IBM Plex Mono', monospace;
+}

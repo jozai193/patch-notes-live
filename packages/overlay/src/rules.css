@@ -1,16 +1,16 @@
-.rule-form {
+.composer {
   position: absolute;
   left: 24px;
-  top: 596px;
+  top: 589px;
   width: 960px;
-  height: 66px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border-radius: 5px;
+}
+.rule-form {
   display: flex;
-  gap: 12px;
   align-items: end;
-  padding: 10px 12px;
-  background: #101c35;
-  border: 1px solid #28476b;
-  border-radius: 7px;
+  gap: 12px;
 }
 .rule-entry {
   flex: 1;
@@ -18,358 +18,165 @@
 }
 .rule-form label > span {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 6px;
-  color: #94bddc;
-  font:
-    11px Consolas,
-    monospace;
-  letter-spacing: 0.5px;
+  color: var(--text);
+  font-size: 14px;
+  margin-bottom: 5px;
 }
 .rule-form small {
-  font:
-    10px Consolas,
-    monospace;
-  color: #74acbb;
-  letter-spacing: 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 .rule-form input {
-  height: 30px;
   width: 100%;
-  font:
-    14px 'Segoe UI',
-    sans-serif;
-  background: #050c20;
-  color: #ecf7ff;
-  border: 1px solid #365277;
+  height: 32px;
+  padding: 4px 8px;
+  color: var(--text);
+  background: var(--background);
+  border: 0;
   border-radius: 3px;
-  padding: 5px 9px;
-}
-.rule-form input:focus {
-  outline: 1px solid #48eaff;
-  border-color: #48eaff;
+  font-size: 16px;
 }
 .author-entry {
-  width: 110px;
+  width: 100px;
 }
 #rule-submit {
   height: 32px;
-  border: 0;
-  border-radius: 3px;
-  padding: 0 17px;
-  background: #48eaff;
-  color: #041122;
-  font:
-    bold 13px Consolas,
-    monospace;
+  padding: 3px 14px;
+}
+.try-one {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 9px;
+  font-size: 13px;
+}
+.try-one > span {
+  color: var(--muted);
   white-space: nowrap;
 }
-#rule-submit span {
-  margin-left: 9px;
+#archive-count {
+  display: none;
 }
-#rule-submit:disabled {
-  background: #27445b;
-  color: #a0b5c8;
-  cursor: wait;
+#archive-list {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  min-width: 0;
+  scrollbar-width: none;
+}
+.archive-item {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--text);
+  font-size: 13px;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--muted) 45%, transparent);
+  text-underline-offset: 3px;
+}
+.archive-item:hover {
+  color: var(--you);
 }
 .demo-badge {
   position: absolute;
   left: 24px;
-  top: 671px;
+  top: 684px;
   width: 960px;
-  color: #8facc8;
-  font:
-    11px/1.4 Consolas,
-    monospace;
-}
-.playfield,
-canvas {
-  height: 500px;
-}
-.sidebar {
-  display: grid;
-  grid-template-rows: 170px 198px minmax(0, 1fr) 58px;
-  grid-template-areas: 'telemetry' 'patches' 'library' 'bot';
-  gap: 10px;
-}
-.sidebar .telemetry {
-  grid-area: telemetry;
-}
-.sidebar .patches {
-  grid-area: patches;
-}
-.sidebar .archive-panel,
-.sidebar .compile-panel {
-  grid-area: library;
-}
-.sidebar .bot-toggle {
-  grid-area: bot;
-}
-.sidebar .panel {
-  padding: 12px;
-}
-.sidebar .panel-heading {
-  margin-bottom: 8px;
-}
-.telemetry .hp-meter {
-  margin: 7px 0 8px;
-  height: 6px;
-}
-.telemetry .stats {
-  margin-bottom: 8px;
-}
-.telemetry .stats strong {
-  font-size: 26px;
-  margin-top: 4px;
-}
-.telemetry .time {
-  padding-top: 7px;
-}
-.telemetry .time strong {
-  font-size: 18px;
-}
-.hp-label {
+  color: var(--muted);
   font-size: 11px;
-}
-.active-patch {
-  margin: 2px 0;
-  padding: 4px 0 4px 7px;
-}
-.active-patch strong {
-  font-size: 12px;
-}
-.active-patch span,
-.active-patch small {
-  font-size: 11px;
-  line-height: 1.25;
-}
-.base-rule {
-  display: none;
-}
-#server-status {
-  font-size: 10px;
-}
-.archive-panel {
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-#archive-list {
-  overflow-y: auto;
-  min-height: 0;
-  scrollbar-width: thin;
-  scrollbar-color: #35567a transparent;
-}
-.archive-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: transparent;
-  color: #b8d9f1;
-  border: 0;
-  border-bottom: 1px solid #28476b66;
-  padding: 7px 2px;
-  font:
-    12px/1.2 'Segoe UI',
-    sans-serif;
-}
-.archive-item:hover,
-.archive-item:focus-visible {
-  color: #48eaff;
-  background: #122c47;
-}
-#archive-count {
-  color: #94a9c9;
-  font:
-    11px Consolas,
-    monospace;
+  line-height: 1.3;
 }
 .compile-panel {
-  position: relative;
-  z-index: 5;
-  width: 100%;
+  padding: 14px;
+  background: var(--surface);
+  border-left: 3px solid var(--ai);
+  border-radius: 3px;
   min-height: max-content;
   overflow: visible;
-  padding: 12px;
-  background: #060e21f5;
-  border: 1px solid #48eaff88;
-  border-left: 3px solid #48eaff;
-  border-radius: 5px;
-  box-shadow: 0 5px 30px #0008;
-  pointer-events: auto;
+}
+.compile-panel .panel-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 5px;
+  margin-bottom: 10px;
 }
 .compile-panel h2 {
-  color: #85f0ff;
-  font-size: 12px;
+  font-size: 21px;
+  color: var(--ai);
 }
 #compile-time {
-  font:
-    12px Consolas,
-    monospace;
-  color: #8daaca;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 .compile-panel p {
-  margin: 5px 0;
-  font:
-    12px/1.4 'Segoe UI',
-    sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 8px 0;
   overflow-wrap: anywhere;
 }
 #compile-request {
-  color: #e7f5ff;
+  color: var(--text);
 }
 #compile-message {
-  color: #9eb7d0;
+  color: var(--muted);
 }
 #compile-steps {
-  display: flex;
-  gap: 10px;
-  padding: 0;
-  list-style: none;
-  margin: 10px 0;
-  font:
-    11px Consolas,
-    monospace;
-  color: #536d90;
-}
-#compile-steps li + li:before {
-  content: '→';
-  margin-right: 10px;
-}
-#compile-steps .current {
-  color: #ffffff;
-}
-#compile-steps .done {
-  color: #48eaff;
-}
-#compile-progress {
-  width: 100%;
-  height: 5px;
-  border: 0;
-  accent-color: #48eaff;
-}
-#compile-progress::-webkit-progress-bar {
-  background: #24334c;
-}
-#compile-progress::-webkit-progress-value {
-  background: #48eaff;
-  transition: width 0.3s;
-}
-.first-run {
-  position: absolute;
-  z-index: 8;
-  left: 160px;
-  top: 172px;
-  width: 630px;
-  padding: 30px 36px;
-  border: 1px solid #48eaff88;
-  border-radius: 8px;
-  background: #081126f7;
-  box-shadow: 0 12px 70px #000c;
-}
-.first-run strong {
-  font:
-    600 18px Consolas,
-    monospace;
-  color: #48eaff;
-  letter-spacing: 2px;
-}
-.first-run p {
-  font-size: 17px;
-  line-height: 1.5;
-  color: #e4efff;
-}
-.first-run button {
-  padding: 10px 20px;
-  background: #48eaff;
-  border: 0;
-  border-radius: 3px;
-  font:
-    bold 13px Consolas,
-    monospace;
-  color: #061021;
-}
-/* Revert lives in the bottom-left slot; combo is drawn in the top-right canvas slot. */
-#patch-reverted {
-  left: 20px;
-  bottom: 18px;
-  max-width: 600px;
-}
-.obs .rule-form,
-.obs .first-run,
-.obs .demo-badge {
-  display: none;
-}
-
-/* Feedback replaces the archive in a content-sized row, outside the arena/banners.
-   The active-patch list gives up spare height instead of clipping feedback text. */
-.sidebar.has-feedback {
-  grid-template-rows: 140px minmax(0, 1fr) max-content 58px;
-}
-.sidebar.has-feedback .archive-panel {
-  display: none;
-}
-.sidebar.has-feedback .telemetry .stats {
-  margin-bottom: 4px;
-}
-.sidebar.has-feedback .telemetry .panel-heading {
-  margin-bottom: 4px;
-}
-.sidebar.has-feedback .telemetry .stats strong {
-  font-size: 22px;
-}
-.sidebar.has-feedback .telemetry .hp-meter {
-  margin: 5px 0;
-}
-.sidebar.has-feedback .telemetry .time {
-  padding-top: 4px;
-}
-.compile-panel #compile-steps {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
-  margin: 8px 0;
+  padding: 0;
+  margin: 10px 0;
+  list-style: none;
+  font-size: 13px;
+  color: var(--muted);
 }
-.compile-panel #compile-steps li + li:before {
-  content: none;
+#compile-steps .current {
+  color: var(--ai);
+}
+#compile-steps .done {
+  color: var(--good);
+}
+#compile-progress {
+  width: 100%;
+  height: 4px;
+  border: 0;
+  accent-color: var(--ai);
+}
+#compile-progress::-webkit-progress-bar {
+  background: var(--background);
+}
+#compile-progress::-webkit-progress-value {
+  background: var(--ai);
+}
+.compile-panel[data-state='no-match'] {
+  border-left-color: var(--muted);
+}
+.compile-panel[data-state='no-match'] h2 {
+  color: var(--text);
 }
 #archive-suggestions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 7px;
 }
 .archive-suggestion {
   max-width: 100%;
-  padding: 6px 8px;
-  border: 1px solid #48eaff66;
-  border-radius: 12px;
-  background: #112d46;
-  color: #b6f5ff;
-  font:
-    11px/1.3 Consolas,
-    monospace;
+  background: var(--background);
+  border: 0;
+  border-radius: 14px;
+  padding: 6px 10px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.3;
   text-align: left;
 }
-.archive-suggestion:hover,
-.archive-suggestion:focus-visible {
-  background: #1c4764;
-  border-color: #48eaff;
-}
-.typing-assist {
-  position: absolute;
-  left: 40px;
-  top: 564px;
-  z-index: 6;
-  padding: 4px 8px;
-  background: #092336ed;
-  border: 1px solid #48eaff55;
-  border-radius: 10px;
-  color: #9cf4ff;
-  font:
-    11px Consolas,
-    monospace;
-  pointer-events: none;
+.archive-suggestion:hover {
+  color: var(--you);
 }
 .playfield:has(#game-over:not([hidden])) ~ .sidebar #compile-panel {
   display: none;

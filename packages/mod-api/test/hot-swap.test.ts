@@ -78,3 +78,22 @@ it('reverts layered physics and owned spawns without resetting other mods', asyn
     host.dispose();
   }
 });
+it('exposes read-only spawn provenance without adding fields to entities, and forgets removed owners', async () => {
+  const host = await SandboxHost.create([]);
+  try {
+    const world = new World(1, host);
+    await host.addMod(
+      'spawn-color',
+      `export default {name:'Spawn',description:'Spawn',hooks:{onStart(g){g.spawn('pickup',{x:100,y:100});}}}`,
+    );
+    world.tick();
+    const entity = world.snapshot().entities.find((e) => e.kind === 'pickup')!;
+    expect(host.spawnedBy(entity.id)).toBe('spawn-color');
+    expect(host.spawnedBy(world.snapshot().player.id)).toBeUndefined();
+    expect(entity).not.toHaveProperty('patchId');
+    host.removeMod('spawn-color');
+    expect(host.spawnedBy(entity.id)).toBeUndefined();
+  } finally {
+    host.dispose();
+  }
+});

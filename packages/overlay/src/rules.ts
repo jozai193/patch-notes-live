@@ -90,11 +90,11 @@ export class RuleUI {
     this.connected = value;
     document.getElementById('demo-badge')!.hidden = value;
     document.getElementById('rule-mode')!.textContent = value
-      ? 'LIVE CODEX · ~60–90 s · 20 s cooldown'
-      : 'ARCHIVE MODE · instant · no login';
+      ? 'Live Codex · ~60–90 s'
+      : 'Archive · instant';
   }
   private begin(id: string, request: string, author: string): void {
-    this.panel.querySelector('h2')!.textContent = 'COMPILING PATCH';
+    this.panel.querySelector('h2')!.textContent = 'Compiling patch';
     this.panel.setAttribute('aria-label', 'Compiling patch');
     this.panel.dataset.state = 'compile';
     this.list.hidden = this.bar.hidden = this.timer.hidden = false;
@@ -174,7 +174,7 @@ export class RuleUI {
         true,
       );
     else {
-      this.panel.querySelector('h2')!.textContent = 'NO MATCH IN ARCHIVE';
+      this.panel.querySelector('h2')!.textContent = 'No match in archive';
       this.panel.setAttribute('aria-label', 'No match in archive');
       this.panel.dataset.state = 'no-match';
       this.list.hidden = this.bar.hidden = this.timer.hidden = true;
@@ -213,7 +213,7 @@ export class RuleUI {
     this.button.disabled = true;
     if (!this.activeId || this.terminal)
       this.begin(`archive-${++this.localId}`, entry.request, author);
-    this.panel.querySelector('h2')!.textContent = 'ARCHIVE PATCH';
+    this.panel.querySelector('h2')!.textContent = 'Archive patch';
     this.panel.dataset.state = 'archive';
     this.panel.setAttribute('aria-label', 'Archive patch');
     [...this.list.children].forEach((node, i) => {

@@ -1,4 +1,5 @@
 import type { Entity, Snapshot, UIEvent } from '@patch-notes-live/engine';
+import { theme, alpha, entityColor, reducedMotion } from './tokens.js';
 interface Particle {
   x: number;
   y: number;
@@ -52,7 +53,7 @@ export class Effects {
           x: e.x,
           y: e.y,
           life: 0.2,
-          color: e.color,
+          color: entityColor(e),
           radius: e.kind === 'player' ? 4 : 2,
         });
       }
@@ -98,7 +99,7 @@ export class Effects {
   }
   kill(e: Entity): void {
     if (e.kind !== 'enemy') return;
-    this.burst(e.x, e.y, e.color, 18);
+    this.burst(e.x, e.y, entityColor(e), 18);
     this.combo = this.comboLife > 0 ? this.combo + 1 : 1;
     this.comboLife = 2.5;
   }
@@ -120,12 +121,14 @@ export class Effects {
       else this.flashes.set(id, life - dt);
     }
     for (const p of this.particles) {
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
+      if (!reducedMotion()) {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+      }
       p.life -= dt;
     }
     for (const n of this.numbers) {
-      n.y -= 55 * dt;
+      if (!reducedMotion()) n.y -= 55 * dt;
       n.life -= dt;
     }
     for (const t of this.trails) t.life -= dt;
@@ -137,7 +140,7 @@ export class Effects {
     return this.flashes.has(id);
   }
   offset(): { x: number; y: number } {
-    const m = (this.shake / 0.35) * 11;
+    const m = reducedMotion() ? 0 : (this.shake / 0.35) * 11;
     return { x: (Math.random() - 0.5) * m, y: (Math.random() - 0.5) * m };
   }
   draw(ctx: CanvasRenderingContext2D): void {
@@ -162,10 +165,10 @@ export class Effects {
     ctx.restore();
     ctx.save();
     ctx.textAlign = 'center';
-    ctx.font = 'bold 17px Consolas, monospace';
+    ctx.font = '500 17px "DM Sans", sans-serif';
     for (const n of this.numbers) {
       ctx.globalAlpha = Math.min(1, n.life * 3);
-      ctx.fillStyle = n.player ? '#ff617a' : '#ffffff';
+      ctx.fillStyle = theme().danger;
       ctx.fillText(n.text, n.x, n.y);
     }
     ctx.restore();
@@ -175,29 +178,21 @@ export class Effects {
     ctx.textAlign = 'center';
     if (this.waveLife > 0) {
       ctx.globalAlpha = Math.min(1, this.waveLife, (2.1 - this.waveLife) * 5);
-      ctx.fillStyle = '#48eaff';
-      ctx.font = '12px Consolas, monospace';
-      ctx.fillText('INCOMING TRANSMISSION', width / 2, 105);
-      ctx.font = 'bold 38px Consolas, monospace';
-      ctx.fillText(`WAVE ${String(this.wave).padStart(2, '0')}`, width / 2, 147);
+      ctx.fillStyle = theme().text;
+      ctx.font = '600 34px "Bricolage Grotesque", sans-serif';
+      ctx.fillText(`Wave ${this.wave}`, width / 2, 122);
     }
     if (this.comboLife > 0 && this.combo >= 2) {
       ctx.globalAlpha = Math.min(1, this.comboLife * 2);
       ctx.textAlign = 'right';
-      ctx.fillStyle = '#ffae57';
-      ctx.font = 'bold 23px Consolas, monospace';
-      ctx.fillText(`${this.combo}× COMBO`, width - 24, 40);
-      ctx.font = '11px Consolas, monospace';
-      ctx.fillText(
-        this.combo >= 5 ? 'ABSOLUTELY UNNECESSARY.' : 'KEEP THE CHAIN ALIVE',
-        width - 24,
-        60,
-      );
+      ctx.fillStyle = theme().change;
+      ctx.font = '600 23px "Bricolage Grotesque", sans-serif';
+      ctx.fillText(`${this.combo}× combo`, width - 24, height - 82);
     }
     if (this.shake > 0) {
-      ctx.fillStyle = `rgba(255,46,97,${this.shake * 0.3})`;
+      ctx.fillStyle = alpha(theme().danger, this.shake * 0.3);
       ctx.fillRect(0, 0, width, height);
-      ctx.strokeStyle = '#ff4267';
+      ctx.strokeStyle = theme().danger;
       ctx.lineWidth = this.shake * 16;
       ctx.strokeRect(0, 0, width, height);
     }
@@ -211,7 +206,20 @@ export class Effects {
   ): void {
     if (!this.rewriting) return;
     const strength = this.rewriteLife / 0.6,
-      color = this.rewriteRed ? '#ff375f' : '#48eaff';
+      color = this.rewriteRed ? theme().danger : theme().ai;
+    if (reducedMotion()) {
+      ctx.save();
+      ctx.globalAlpha = strength * 0.18;
+      ctx.fillStyle = color;
+      ctx.fillRect(0, 0, width, height);
+      ctx.globalAlpha = strength;
+      ctx.fillStyle = theme().text;
+      ctx.textAlign = 'center';
+      ctx.font = '600 24px "Bricolage Grotesque", sans-serif';
+      ctx.fillText(this.rewriteText, width / 2, height / 2, width - 60);
+      ctx.restore();
+      return;
+    }
     // RGB-separated copies and horizontal tears come from a dedicated snapshot, never a self-copy.
     const b = buffer.getContext('2d')!;
     b.clearRect(0, 0, buffer.width, buffer.height);
@@ -232,7 +240,7 @@ export class Effects {
       c.clearRect(0, 0, channel.width, channel.height);
       c.drawImage(buffer, 0, 0);
       c.globalCompositeOperation = 'multiply';
-      c.fillStyle = i === 0 ? '#ff0000' : this.rewriteRed ? '#ff0000' : '#00ffff';
+      c.fillStyle = i === 0 ? theme().danger : this.rewriteRed ? theme().danger : theme().ai;
       c.fillRect(0, 0, channel.width, channel.height);
       c.globalCompositeOperation = 'destination-in';
       c.drawImage(buffer, 0, 0);
@@ -258,18 +266,18 @@ export class Effects {
         h,
       );
     }
-    ctx.fillStyle = '#030817df';
+    ctx.fillStyle = alpha(theme().background, 0.9);
     ctx.fillRect(0, height * 0.43, width, 88);
     ctx.globalAlpha = 1;
     ctx.textAlign = 'center';
-    ctx.fillStyle = this.rewriteRed ? '#ff687e' : '#b1f9ff';
-    ctx.font = '12px Consolas, monospace';
+    ctx.fillStyle = this.rewriteRed ? theme().danger : theme().ai;
+    ctx.font = '14px "DM Sans", sans-serif';
     ctx.fillText(
-      this.rewriteRed ? 'ROLLING BACK REALITY' : 'REWRITING THE RULES',
+      this.rewriteRed ? 'Reverting patch' : 'Applying patch',
       width / 2,
       height * 0.43 + 25,
     );
-    ctx.font = 'bold 23px Consolas, monospace';
+    ctx.font = '600 23px "Bricolage Grotesque", sans-serif';
     ctx.fillText(this.rewriteText, width / 2, height * 0.43 + 58, width - 60);
     ctx.restore();
   }

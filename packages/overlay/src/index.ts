@@ -12,8 +12,20 @@ import { PerfReadout, RollingSamples } from './perf.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, readOptions } from './view.js';
 import { DemoSession, bindTypingAssist } from './demo-session.js';
 import { RuleUI, firstRun } from './rules.js';
+import { theme } from './tokens.js';
+import { PatchFeed } from './patch-feed.js';
+import { Landing } from './landing.js';
+import '@fontsource/bricolage-grotesque/latin-600.css';
+import '@fontsource/bricolage-grotesque/latin-800.css';
+import '@fontsource/dm-sans/latin-400.css';
+import '@fontsource/dm-sans/latin-500.css';
+import '@fontsource/dm-sans/latin-600.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '@fontsource/ibm-plex-mono/latin-500.css';
+import './tokens.css';
 import './style.css';
 import './rules.css';
+import './landing.css';
 
 function element<T extends HTMLElement>(id: string): T {
   const result = document.getElementById(id);
@@ -22,8 +34,14 @@ function element<T extends HTMLElement>(id: string): T {
 }
 
 const options = readOptions(window.location.search);
+let playing = options.play || options.obs;
+let landing: Landing | undefined;
+const feed = new PatchFeed();
+document.documentElement.classList.toggle('playing', playing);
 document.documentElement.classList.toggle('obs', options.obs);
 const stage = element('stage');
+stage.hidden = !playing;
+element('landing').hidden = playing;
 const canvas = element<HTMLCanvasElement>('game');
 const context = canvas.getContext('2d');
 if (!context) throw new Error('Canvas 2D is unavailable');
@@ -39,7 +57,7 @@ const wave = element('wave'),
   time = element('time');
 const finalTime = element('final-time'),
   finalScore = element('final-score');
-element('seed-label').textContent = `SEED ${options.seed}`;
+element('seed-label').textContent = `Seed ${options.seed}`;
 const feedback = new Feedback(element('toasts'), element('tint'));
 const perf = options.perf ? new PerfReadout(element('perf')) : undefined;
 const demo = new DemoSession(options.bot);
@@ -69,20 +87,26 @@ const seconds = Number(params.get('patchLifetime') ?? 180);
 const manager = await PatchManager.create(
   {
     applied(patch, version) {
+      feed.applied(patch, version);
+      element('patch-notice').style.setProperty(
+        '--patch-color',
+        `var(--patch-${feed.slot(patch.patchId)})`,
+      );
       demo.patchApplied(current.tick);
       effects.rewrite(patch.name);
       pendingNotice = {
         patchId: patch.patchId,
-        text: `PATCH NOTES ${version}: ${patch.name} by ${patch.author}`,
-        notes: (patch.origin === 'archive' ? 'FROM THE ARCHIVE · ' : '') + (patch.patchNotes ?? ''),
+        text: `${version} · ${patch.name} by ${patch.author}`,
+        notes: (patch.origin === 'archive' ? 'From the archive · ' : '') + (patch.patchNotes ?? ''),
       };
 
       connection?.send({ v: 1, type: 'patchApplied', patchId: patch.patchId, version });
     },
     reverted(patchId, reason) {
+      feed.reverted(patchId, reason);
       if (pendingNotice?.patchId === patchId) pendingNotice = undefined;
       effects.rewrite(reason, true);
-      notice(`PATCH REVERTED: ${reason}`, true);
+      notice(`Patch reverted: ${reason}`, true);
       connection?.send({ v: 1, type: 'patchReverted', patchId, reason });
     },
   },
@@ -122,19 +146,15 @@ function toggleBot(): void {
     {
       type: 'toast',
       text: demo.autopilot
-        ? 'Autopilot online. Sit back and watch.'
-        : 'Autopilot off. The arena is yours.',
+        ? 'Autopilot on. Keep the suggestions coming.'
+        : 'Autopilot off. You have the controls.',
     },
   ]);
 }
 
 function updateBot(): void {
   botButton.setAttribute('aria-pressed', String(demo.autopilot));
-  botLabel.textContent = demo.autopilot
-    ? 'On · Bot has the controls'
-    : demo.typing
-      ? 'Temporary · while you type'
-      : "Off · You're in control";
+  botLabel.textContent = demo.autopilot ? 'On' : demo.typing ? 'While you type' : 'Off';
   element('typing-assist').hidden = !demo.typing;
 }
 
@@ -186,11 +206,13 @@ function resize(): void {
 }
 window.addEventListener('resize', resize);
 window.addEventListener('pagehide', () => {
+  landing?.dispose();
   manager.dispose();
   connection?.close();
   clearInterval(telemetryTimer);
 });
 document.addEventListener('visibilitychange', () => {
+  landing?.pause();
   lastFrame = undefined;
   accumulator = 0;
 });
@@ -210,37 +232,18 @@ function updateHUD(): void {
   hpMeter.setAttribute('aria-valuenow', String(current.player.hp));
   hpFill.style.width = `${(current.player.hp / current.player.maxHp) * 100}%`;
   hpFill.style.backgroundColor =
-    current.player.hp <= current.player.maxHp * 0.3 ? '#ff617a' : '#48eaff';
-  wave.textContent = String(Math.max(1, current.wave)).padStart(2, '0');
-  score.textContent = String(current.score).padStart(4, '0');
+    current.player.hp <= current.player.maxHp * 0.3 ? theme().danger : theme().you;
+  wave.textContent = String(Math.max(1, current.wave));
+  score.textContent = String(current.score);
   time.textContent = clock(current.time);
   element('version').textContent = manager.version;
   const active = manager.active;
   element('patch-count').textContent = `${active.length} / 3`;
-  const signature = JSON.stringify(active);
-  const list = element('active-patches');
-  if (list.dataset.signature !== signature) {
-    list.dataset.signature = signature;
-    list.replaceChildren();
-    if (!active.length) {
-      const p = document.createElement('p');
-      p.textContent = 'No active patches. The base rules are in play.';
-      list.append(p);
-    }
-    for (const patch of active) {
-      const row = document.createElement('div');
-      row.className = 'active-patch';
-      row.dataset.patchId = patch.patchId;
-      const name = document.createElement('strong');
-      name.textContent = patch.name;
-      const author = document.createElement('span');
-      author.textContent = `by ${patch.author}`;
-      const countdown = document.createElement('small');
-      countdown.textContent = `${patch.remainingSeconds}s remaining`;
-      row.append(name, author, countdown);
-      list.append(row);
-    }
-  }
+  feed.update(
+    element('active-patches'),
+    active,
+    element<HTMLInputElement>('rule-author').value.trim() || 'You',
+  );
   if (performance.now() >= noticeUntil) element('patch-notice').hidden = true;
   if (performance.now() >= revertUntil) element('patch-reverted').hidden = true;
   gameOver.hidden = !current.gameOver;
@@ -253,6 +256,13 @@ function updateHUD(): void {
 function frame(now: number): void {
   if (document.hidden || restarting) {
     lastFrame = undefined;
+    requestAnimationFrame(frame);
+    return;
+  }
+  if (!playing) {
+    landing?.update(now);
+    canvas.dataset.tick = '0';
+    canvas.dataset.paused = 'true';
     requestAnimationFrame(frame);
     return;
   }
@@ -295,6 +305,11 @@ function frame(now: number): void {
     options.obs,
     visualTime,
     demo.protected(current.tick),
+    (entityId) => {
+      const owner = manager.host.spawnedBy(entityId);
+      const slot = owner && feed.slot(owner);
+      return slot ? theme()[`patch-${slot}` as 'patch-1'] : undefined;
+    },
   );
   updateHUD();
   ruleUI.update(now, current.gameOver);
@@ -341,7 +356,25 @@ const ruleUI = new RuleUI({
     demo.patchApplied(current.tick);
   },
 });
-firstRun();
+if (playing) firstRun();
+else
+  landing = new Landing(() => {
+    controls.reset();
+    playing = true;
+    element('landing').hidden = true;
+    stage.hidden = false;
+    document.documentElement.classList.add('playing');
+    element('first-run').hidden = true;
+    try {
+      localStorage.setItem('patch-notes-live:onboarded', '1');
+    } catch {
+      /* Optional storage. */
+    }
+    lastFrame = undefined;
+    accumulator = 0;
+    effects.rewrite('Your rules. Starting at v1.0.');
+    canvas.focus({ preventScroll: true });
+  });
 const server = params.get('server') ?? (import.meta.env.PROD ? 'off' : 'ws://localhost:8787');
 let messages: Promise<unknown> = Promise.resolve();
 if (server !== 'off' && /^wss?:\/\//.test(server) && server.length <= 2048)

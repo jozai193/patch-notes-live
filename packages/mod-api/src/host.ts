@@ -105,6 +105,13 @@ export class SandboxHost implements ModHost {
   get mods(): readonly ModInfo[] {
     return this.runtimes.map((r) => ({ ...r.info, hooks: [...r.info.hooks] }));
   }
+  /** Read-only provenance for render-only patch halos; not exposed inside the VM. */
+  spawnedBy(entityId: number): string | undefined {
+    const owner = this.journal.spawnedBy(entityId);
+    return owner === undefined
+      ? undefined
+      : this.runtimes.find((m) => m.info.id === owner)?.info.patchId;
+  }
   isHealthy(mod: string | number | ModInfo): boolean {
     const info = this.mods.find((m) =>
       typeof mod === 'number'

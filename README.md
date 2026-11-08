@@ -2,15 +2,17 @@
 
 **Type a rule. Watch a real AI-written patch rewrite a game that is already running.** Patch Notes Live is a neon arena survival game whose rules are editable while you play: make enemies flee, turn the floor into lava, or become a ridiculously large spaceship. Locally, Codex writes the actual mod code, an independent verifier checks it, and an isolated QuickJS runtime hot-loads it without restarting the world. The web demo lets anyone try the same sandboxed mods instantly through a verified archive, with no login or local server. Twitch is an optional future input, not a requirement.
 
-![The neon arena, rule box and an archived huge-player patch](docs/screenshots/step-9-web-demo.png)
+![The redesigned game and its live patch notes](docs/screenshots/redesign/game-two-patches.png)
 
 **[Play online — URL to be added after GitHub Pages is enabled](#play-online)**
 
 ## Play online
 
-The Pages link is a placeholder until the owner creates the repository and enables Pages. The web build includes **25 verified archive patches**. Try **“make the player huge”** or **“enemies run away from you”**, or click a patch in **Archive**. The demo labels archive use honestly; it does not claim to generate new code in the browser.
+The Pages link is a placeholder until the owner creates the repository and enables Pages. The web build includes **25 verified archive patches**. Try **“make the player huge”** or **“enemies run away from you”**, or click a patch under **Try one**. The demo labels archive use honestly; it does not claim to generate new code in the browser.
 
-Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. **B** toggles autopilot; **R** restarts while keeping active patches. Rule inputs never trigger game shortcuts. Autopilot temporarily drives while the rule/name input is focused, with a visible chip; blur restores your chosen mode. The first-run card pauses simulation until dismissed. Offline patch applies grant three seconds of damage protection, shown by a shimmer. First-run help remembers dismissal when browser storage is available.
+The landing page previews real archive mods in a separate attract-mode world. Press **Play in your browser** (or Enter) to start a fresh playable run. The diff headline and changelog ticker use actual archive rules and notes. The local setup link opens the canonical README section on the page.
+
+Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. **B** toggles autopilot; **R** restarts while keeping active patches. Rule inputs never trigger game shortcuts. Autopilot temporarily drives while the rule/name input is focused, with a visible chip; blur restores your chosen mode. The landing page never advances your playable run. Direct play links may show a short help card, which also pauses simulation until dismissed. Offline patch applies grant three seconds of damage protection, shown by a shimmer. First-run help remembers dismissal when browser storage is available.
 
 ## Run locally
 
@@ -26,9 +28,9 @@ Or set `CODEX_API_KEY` in the environment / ignored root `.env` instead of CLI l
 
 Open **http://localhost:5173**. The command starts Vite plus the loopback WebSocket hub on port **8787** and builds trusted server/harness code first. Type a rule (200 characters maximum), optionally add your name, and press **Enter** or **Patch it**. The compile panel shows editing/testing progress and elapsed time. Typical measured generation is about a minute, so keep playing or use autopilot. Each connected client has a 20-second cooldown; the hub compiles one rule at a time and holds up to three waiting rules.
 
-With the hub stopped, the game and archive still work. On quota exhaustion the hub tries a conservative archive match and explicitly says **“Codex is out of quota — loaded a patch from the archive.”** Unmatched requests show a distinct NO MATCH IN ARCHIVE panel with up to three clickable alternatives, which dismisses after six seconds. Rejected, failed and timed-out requests show their reason.
+With the hub stopped, the game and archive still work. On quota exhaustion the hub tries a conservative archive match and explicitly says **“Codex is out of quota — loaded a patch from the archive.”** Unmatched requests show a distinct No match in archive panel with up to three clickable alternatives, which dismisses after six seconds. Rejected, failed and timed-out requests show their reason.
 
-Useful flags: `?bot=1`, `?seed=42`, `?perf=1`, `?obs=1` (transparent arena/cursor hidden), `?server=off`, or `?server=ws://localhost:8787`. Patches last **180 seconds** by default (`?patchLifetime=180`, configurable 1–3600). Up to three remain active; the oldest expires on a fourth apply. Restart reruns their onStart hooks, preserving version/lifetime.
+Useful flags: `?play=1` (skip landing), `?bot=1`, `?seed=42`, `?perf=1`, `?obs=1` (skips landing; transparent arena/cursor hidden), `?server=off`, or `?server=ws://localhost:8787`. Patches last **180 seconds** by default (`?patchLifetime=180`, configurable 1–3600). Up to three remain active; the oldest expires on a fourth apply. Restart reruns their onStart hooks, preserving version/lifetime.
 
 Existing CLI controls still work:
 
@@ -109,3 +111,7 @@ Generation needs local Codex authentication/quota and can take up to 150 seconds
 MIT licensed. [Architecture and scoped build plan](PLAN.md) · [Step 9 validation](docs/step-9-validation.md).
 
 [Judge-flow regression fixes and preview evidence](docs/step-9-fixes-validation.md).
+
+## Design
+
+The [design system](docs/design.md) defines semantic color tokens, contrast, type, motion and copy. The UI and canvas read one token source; deliberate mod colors remain intact. Fonts are self-hosted through Fontsource (Bricolage Grotesque, DM Sans, IBM Plex Mono), with OFL notices included in the web build under `licenses/fonts.txt`. Reduced-motion preferences replace movement/tearing with stationary crossfades.
