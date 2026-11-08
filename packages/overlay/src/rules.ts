@@ -2,6 +2,7 @@ import index from '../../../mods/archive/index.json' with { type: 'json' };
 import {
   archivePatch,
   matchArchive,
+  closestArchive,
   moderateRule,
   NO_ARCHIVE_MATCH,
 } from '@patch-notes-live/mod-api/archive';
@@ -31,6 +32,7 @@ export class RuleUI {
   private phase: CompilePhase = 'queued';
   private started = 0;
   private terminal = false;
+  private showing = false;
   private hideAt = Infinity;
   private readonly steps = ['thinking', 'editing', 'testing', 'passed'] as const;
   private readonly completed = new Set<string>();
@@ -93,6 +95,12 @@ export class RuleUI {
   }
   private begin(id: string, request: string, author: string): void {
     this.panel.querySelector('h2')!.textContent = 'COMPILING PATCH';
+    this.panel.setAttribute('aria-label', 'Compiling patch');
+    this.panel.dataset.state = 'compile';
+    this.list.hidden = this.bar.hidden = this.timer.hidden = false;
+    document.getElementById('compile-request')!.hidden = false;
+    document.getElementById('archive-suggestions')!.replaceChildren();
+    this.showing = true;
     this.activeId = id;
     this.completed.clear();
     this.phase = 'queued';
@@ -166,9 +174,26 @@ export class RuleUI {
         true,
       );
     else {
-      this.options.notice(NO_ARCHIVE_MATCH, true);
-      this.showPhase('failed', NO_ARCHIVE_MATCH);
-      this.finish();
+      this.panel.querySelector('h2')!.textContent = 'NO MATCH IN ARCHIVE';
+      this.panel.setAttribute('aria-label', 'No match in archive');
+      this.panel.dataset.state = 'no-match';
+      this.list.hidden = this.bar.hidden = this.timer.hidden = true;
+      this.bar.value = 0;
+      document.getElementById('compile-request')!.hidden = true;
+      this.message.textContent = NO_ARCHIVE_MATCH;
+      const suggestions = document.getElementById('archive-suggestions')!;
+      for (const candidate of closestArchive(checked.text, archive)) {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'archive-suggestion';
+        chip.textContent = candidate.name;
+        chip.title = candidate.request;
+        chip.addEventListener('click', () => {
+          void this.applyArchive(candidate, 'Archive suggestion selected — no live AI generation.');
+        });
+        suggestions.append(chip);
+      }
+      this.finish(6000);
     }
   }
   private async applyArchive(
@@ -189,6 +214,8 @@ export class RuleUI {
     if (!this.activeId || this.terminal)
       this.begin(`archive-${++this.localId}`, entry.request, author);
     this.panel.querySelector('h2')!.textContent = 'ARCHIVE PATCH';
+    this.panel.dataset.state = 'archive';
+    this.panel.setAttribute('aria-label', 'Archive patch');
     [...this.list.children].forEach((node, i) => {
       node.textContent = ['cached', 'loading', 'sandbox', 'applied'][i]!;
     });
@@ -208,8 +235,8 @@ export class RuleUI {
       this.finish();
     }
   }
-  private finish(): void {
-    this.hideAt = performance.now() + 8000;
+  private finish(duration = 8000): void {
+    this.hideAt = performance.now() + duration;
     this.terminal = true;
     this.busy = false;
     this.button.disabled = false;
@@ -237,8 +264,10 @@ export class RuleUI {
     }
     return false;
   }
-  update(now: number): void {
-    if (this.terminal && now >= this.hideAt) this.panel.hidden = true;
+  update(now: number, gameOver = false): void {
+    if (this.terminal && now >= this.hideAt) this.showing = false;
+    this.panel.hidden = !this.showing || gameOver;
+    document.querySelector('.sidebar')!.classList.toggle('has-feedback', !this.panel.hidden);
     if (!this.panel.hidden && !this.terminal)
       this.timer.textContent = `${((now - this.started) / 1000).toFixed(0)}s`;
   }
@@ -246,9 +275,11 @@ export class RuleUI {
 export function firstRun(): void {
   const panel = document.getElementById('first-run')!;
   try {
-    panel.hidden = localStorage.getItem('patch-notes-live:onboarded') === '1';
+    panel.hidden =
+      document.documentElement.classList.contains('obs') ||
+      localStorage.getItem('patch-notes-live:onboarded') === '1';
   } catch {
-    panel.hidden = false;
+    panel.hidden = document.documentElement.classList.contains('obs');
   }
   document.getElementById('first-run-dismiss')!.addEventListener('click', () => {
     panel.hidden = true;

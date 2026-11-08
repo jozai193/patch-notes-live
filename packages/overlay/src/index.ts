@@ -10,6 +10,7 @@ import { interpolateSnapshots, MAX_FRAME_SECONDS, planFrame } from './loop.js';
 import { render } from './renderer.js';
 import { PerfReadout, RollingSamples } from './perf.js';
 import { CANVAS_HEIGHT, CANVAS_WIDTH, readOptions } from './view.js';
+import { DemoSession, bindTypingAssist } from './demo-session.js';
 import { RuleUI, firstRun } from './rules.js';
 import './style.css';
 import './rules.css';
@@ -41,6 +42,7 @@ const finalTime = element('final-time'),
 element('seed-label').textContent = `SEED ${options.seed}`;
 const feedback = new Feedback(element('toasts'), element('tint'));
 const perf = options.perf ? new PerfReadout(element('perf')) : undefined;
+const demo = new DemoSession(options.bot);
 let effects = new Effects();
 let connection: HubConnection | undefined;
 let noticeUntil = 0;
@@ -67,6 +69,7 @@ const seconds = Number(params.get('patchLifetime') ?? 180);
 const manager = await PatchManager.create(
   {
     applied(patch, version) {
+      demo.patchApplied(current.tick);
       effects.rewrite(patch.name);
       pendingNotice = {
         patchId: patch.patchId,
@@ -99,7 +102,7 @@ if (options.mod)
 const createWorld = () =>
   new World(
     options.seed,
-    composeHosts(manager.host, {
+    composeHosts(manager.host, demo.host, {
       onKill: (_g, { victim }) => {
         effects.kill(victim);
       },
@@ -111,28 +114,35 @@ let previous = world.snapshot(),
 let accumulator = 0;
 let lastFrame: number | undefined;
 let visualTime = 0;
-let bot = options.bot;
 
 function toggleBot(): void {
-  bot = !bot;
+  demo.autopilot = !demo.autopilot;
   updateBot();
   world.applyCommands([
     {
       type: 'toast',
-      text: bot ? 'Autopilot online. Sit back and watch.' : 'Autopilot off. The arena is yours.',
+      text: demo.autopilot
+        ? 'Autopilot online. Sit back and watch.'
+        : 'Autopilot off. The arena is yours.',
     },
   ]);
 }
 
 function updateBot(): void {
-  botButton.setAttribute('aria-pressed', String(bot));
-  botLabel.textContent = bot ? 'On · Bot has the controls' : "Off · You're in control";
+  botButton.setAttribute('aria-pressed', String(demo.autopilot));
+  botLabel.textContent = demo.autopilot
+    ? 'On · Bot has the controls'
+    : demo.typing
+      ? 'Temporary · while you type'
+      : "Off · You're in control";
+  element('typing-assist').hidden = !demo.typing;
 }
 
 async function restart(): Promise<void> {
   if (restarting) return;
   restarting = true;
   controls.reset();
+  demo.reset();
   effects = new Effects();
   feedback.clear();
   perf?.reset();
@@ -160,6 +170,10 @@ const controls = new Controls(canvas, { toggleBot, restart });
 botButton.addEventListener('click', toggleBot);
 element('restart').addEventListener('click', restart);
 updateBot();
+bindTypingAssist(demo, () => {
+  controls.reset();
+  updateBot();
+});
 
 function resize(): void {
   stage.style.setProperty(
@@ -247,13 +261,14 @@ function frame(now: number): void {
   if (lastFrame !== undefined) perf?.frame(now - lastFrame);
   if (lastFrame !== undefined) frameSamples.push(now - lastFrame);
   lastFrame = now;
-  const plan = planFrame(accumulator, elapsed);
+  const paused = !element('first-run').hidden;
+  const plan = paused ? { ticks: 0, accumulator: 0, alpha: 1 } : planFrame(accumulator, elapsed);
   accumulator = plan.accumulator;
   manager.update();
   for (let i = 0; i < plan.ticks; i++) {
     if (current.gameOver) break;
     previous = current;
-    world.tick(bot ? botIntent(current) : controls.intent(current.arena));
+    world.tick(demo.drivesPlayer ? botIntent(current) : controls.intent(current.arena));
     current = world.snapshot();
     const duration = manager.host.mods.reduce(
       (sum, m) => sum + (m.tick === current.tick ? m.timeThisTickMs : 0),
@@ -270,11 +285,23 @@ function frame(now: number): void {
   feedback.update(elapsed);
   effects.update(elapsed);
   visualTime += elapsed;
-  const intent = bot ? botIntent(current) : controls.intent(current.arena);
+  const intent = demo.drivesPlayer ? botIntent(current) : controls.intent(current.arena);
   const visible = current.gameOver ? current : interpolateSnapshots(previous, current, plan.alpha);
-  render(ctx, visible, effects, { x: intent.aimX, y: intent.aimY }, options.obs, visualTime);
+  render(
+    ctx,
+    visible,
+    effects,
+    { x: intent.aimX, y: intent.aimY },
+    options.obs,
+    visualTime,
+    demo.protected(current.tick),
+  );
   updateHUD();
-  ruleUI.update(now);
+  ruleUI.update(now, current.gameOver);
+  canvas.dataset.tick = String(current.tick);
+  canvas.dataset.autopilot = String(demo.drivesPlayer);
+  canvas.dataset.paused = String(paused);
+  canvas.dataset.protected = String(demo.protected(current.tick));
   perf?.update(now, current.entities.length, manager.active.length);
   requestAnimationFrame(frame);
 }
@@ -311,6 +338,7 @@ const ruleUI = new RuleUI({
   notice,
   ensurePlaying: async () => {
     if (current.gameOver) await restart();
+    demo.patchApplied(current.tick);
   },
 });
 firstRun();
@@ -327,6 +355,7 @@ if (server !== 'off' && /^wss?:\/\//.test(server) && server.length <= 2048)
         );
     },
     (connected) => {
+      demo.connected = connected;
       ruleUI.setConnected(connected);
       element('server-status').textContent = connected
         ? 'Hub connected'

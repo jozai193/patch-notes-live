@@ -1,0 +1,56 @@
+{
+  "date": "2026-11-08",
+  "url": "http://localhost:4173/?server=ws://127.0.0.1:9",
+  "onboarding": {
+    "tick": 0,
+    "hp": "100 / 100",
+    "paused": true
+  },
+  "typing": {
+    "elapsedMs": 17160,
+    "hp": "100 / 100",
+    "tick": "1167",
+    "effectiveAutopilot": "true",
+    "chosenAutopilot": "false",
+    "chip": "Autopilot while you type",
+    "chipVisible": true,
+    "alive": true,
+    "typed": "make enemies dance with jazz"
+  },
+  "archiveFlow": {
+    "noMatch": {
+      "title": "NO MATCH IN ARCHIVE",
+      "progressVisible": false,
+      "phasesVisible": false,
+      "suggestions": ["Rainbow enemies", "Orbiting enemies", "Enemies tiny and fast"],
+      "panel": {
+        "x": 1004,
+        "y": 418,
+        "width": 252,
+        "height": 198,
+        "top": 418,
+        "right": 1256,
+        "bottom": 616,
+        "left": 1004
+      },
+      "arena": {
+        "x": 24,
+        "y": 84,
+        "width": 960,
+        "height": 500,
+        "top": 84,
+        "right": 984,
+        "bottom": 584,
+        "left": 24
+      }
+    },
+    "applied": {
+      "patches": "Rainbow enemiesby You180s remaining",
+      "protected": "true",
+      "hp": "100 / 100",
+      "chosenAutopilot": "false",
+      "effectiveAutopilot": "false"
+    },
+    "graceExpired": true
+  }
+}

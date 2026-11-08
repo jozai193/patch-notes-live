@@ -10,7 +10,7 @@
 
 The Pages link is a placeholder until the owner creates the repository and enables Pages. The web build includes **25 verified archive patches**. Try **“make the player huge”** or **“enemies run away from you”**, or click a patch in **Archive**. The demo labels archive use honestly; it does not claim to generate new code in the browser.
 
-Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. **B** toggles autopilot; **R** restarts while keeping active patches. Rule inputs never trigger game shortcuts. Enable autopilot while watching a patch compile. First-run help explains the three-step loop and remembers dismissal when browser storage is available.
+Move with **WASD**, aim with the **mouse**, and hold **left click** to fire. **B** toggles autopilot; **R** restarts while keeping active patches. Rule inputs never trigger game shortcuts. Autopilot temporarily drives while the rule/name input is focused, with a visible chip; blur restores your chosen mode. The first-run card pauses simulation until dismissed. Offline patch applies grant three seconds of damage protection, shown by a shimmer. First-run help remembers dismissal when browser storage is available.
 
 ## Run locally
 
@@ -26,7 +26,7 @@ Or set `CODEX_API_KEY` in the environment / ignored root `.env` instead of CLI l
 
 Open **http://localhost:5173**. The command starts Vite plus the loopback WebSocket hub on port **8787** and builds trusted server/harness code first. Type a rule (200 characters maximum), optionally add your name, and press **Enter** or **Patch it**. The compile panel shows editing/testing progress and elapsed time. Typical measured generation is about a minute, so keep playing or use autopilot. Each connected client has a 20-second cooldown; the hub compiles one rule at a time and holds up to three waiting rules.
 
-With the hub stopped, the game and archive still work. On quota exhaustion the hub tries a conservative archive match and explicitly says **“Codex is out of quota — loaded a patch from the archive.”** Unmatched requests explain how to run locally for live AI patches. Rejected, failed and timed-out requests show their reason.
+With the hub stopped, the game and archive still work. On quota exhaustion the hub tries a conservative archive match and explicitly says **“Codex is out of quota — loaded a patch from the archive.”** Unmatched requests show a distinct NO MATCH IN ARCHIVE panel with up to three clickable alternatives, which dismisses after six seconds. Rejected, failed and timed-out requests show their reason.
 
 Useful flags: `?bot=1`, `?seed=42`, `?perf=1`, `?obs=1` (transparent arena/cursor hidden), `?server=off`, or `?server=ws://localhost:8787`. Patches last **180 seconds** by default (`?patchLifetime=180`, configurable 1–3600). Up to three remain active; the oldest expires on a fourth apply. Restart reruns their onStart hooks, preserving version/lifetime.
 
@@ -81,7 +81,7 @@ The 20-request benchmark was run with concurrency two. These are recorded local 
 
 ## How Codex is used
 
-Codex helped build the engine, sandbox, verifier, renderer and integration in this repository. More unusually, it is also part of the running product: the Node server uses the **Codex SDK** to start a thread in an isolated workspace, streams short human-readable editing/testing events, feeds independent verifier failures back for one repair attempt, and only publishes validated source. No model reasoning is dumped into the UI. `npm test` uses fake runners and never spends Codex quota. The web demo transparently replays a verified archive of AI-written mods; the five handwritten seed examples are included too.
+Codex helped build the engine, sandbox, verifier, renderer and integration in this repository. More unusually, it is also part of the running product: the Node server uses the **Codex SDK** to start a thread in an isolated workspace, streams short human-readable editing/testing events, feeds independent verifier failures back for one repair attempt, and only publishes validated source. No model reasoning is dumped into the UI. `npm test` uses fake runners and never spends Codex quota. Its DOM regressions run a fresh headless Chrome/Chromium profile using the existing `ws` dependency (set `BROWSER_PATH` if the browser is outside a standard install location). The web demo transparently replays a verified archive of AI-written mods; the five handwritten seed examples are included too.
 
 ## Build and checks
 
@@ -107,3 +107,5 @@ For OBS, add a 1280×720 Browser source at `http://localhost:5173/?obs=1&bot=1`,
 Generation needs local Codex authentication/quota and can take up to 150 seconds. The web demo has a finite archive and approximate matching; it cannot invent a new rule. Passing the verifier is bounded evidence across three seeds and 60 seconds, not proof of unlimited safety, fun, long-term survival or compatibility between every combination of patches. Several benchmark effects are conditional; a boss scheduled after 30 seconds will not appear immediately. Moon gravity is subtle. The watchdog is a second line of defense, not a substitute for isolation. Twitch, public hosting of live generation, comprehensive moderation, accounts, and sound are not implemented.
 
 MIT licensed. [Architecture and scoped build plan](PLAN.md) · [Step 9 validation](docs/step-9-validation.md).
+
+[Judge-flow regression fixes and preview evidence](docs/step-9-fixes-validation.md).

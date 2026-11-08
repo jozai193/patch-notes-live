@@ -52,6 +52,9 @@
           <button id="restart" type="button">RESTART RUN <kbd>R</kbd></button>
         </section>
       </section>
+      <span id="typing-assist" class="typing-assist" role="status" hidden
+        >Autopilot while you type</span
+      >
       <form id="rule-form" class="rule-form" aria-label="Suggest a game rule">
         <label class="rule-entry"
           ><span>REWRITE THE RULES <small id="rule-mode">ARCHIVE MODE</small></span
@@ -78,22 +81,6 @@
         Web demo: patches come from an archive of AI-written mods. Run locally for live Codex
         patching.
       </div>
-      <section
-        id="compile-panel"
-        class="compile-panel"
-        aria-label="Compiling patch"
-        aria-live="polite"
-        hidden
-      >
-        <div class="panel-heading">
-          <h2>COMPILING PATCH</h2>
-          <span id="compile-time">0s</span>
-        </div>
-        <p id="compile-request"></p>
-        <ol id="compile-steps"></ol>
-        <progress id="compile-progress" max="100" value="0" aria-label="Patch progress"></progress>
-        <p id="compile-message"></p>
-      </section>
       <section id="first-run" class="first-run" aria-label="How to play" hidden>
         <strong>THE RULES ARE YOURS.</strong>
         <p>1. Survive.</p>
@@ -135,6 +122,28 @@
           <div id="active-patches"><p>No active patches. The base rules are in play.</p></div>
           <p id="server-status">Standalone · connecting to hub</p>
           <div class="base-rule"><span class="tiny-dot"></span> BASE GAME <span>v1.0</span></div>
+        </section>
+        <section
+          id="compile-panel"
+          class="compile-panel"
+          aria-label="Compiling patch"
+          aria-live="polite"
+          hidden
+        >
+          <div class="panel-heading">
+            <h2>COMPILING PATCH</h2>
+            <span id="compile-time">0s</span>
+          </div>
+          <p id="compile-request"></p>
+          <ol id="compile-steps"></ol>
+          <progress
+            id="compile-progress"
+            max="100"
+            value="0"
+            aria-label="Patch progress"
+          ></progress>
+          <p id="compile-message"></p>
+          <div id="archive-suggestions" aria-label="Closest archive suggestions"></div>
         </section>
         <section class="panel archive-panel">
           <div class="panel-heading">

@@ -72,6 +72,36 @@ export function matchArchive<T extends ArchiveEntry>(
   }
   return best;
 }
+/** Ranked alternatives are suggestions, never an automatic low-confidence match. */
+export function closestArchive<T extends ArchiveEntry>(
+  request: string,
+  entries: readonly T[],
+): T[] {
+  const query = tokens(request);
+  const ranked = entries
+    .map((entry, index) => ({
+      entry,
+      index,
+      score: Math.max(
+        ...[entry.request, entry.name].map((text) => {
+          const words = tokens(text);
+          const overlap = [...query].filter((word) => words.has(word)).length;
+          return overlap / Math.max(1, query.size + words.size - overlap);
+        }),
+      ),
+    }))
+    .sort((a, b) => b.score - a.score || a.index - b.index);
+  const seen = new Set<string>();
+  return ranked
+    .filter(({ entry }) => {
+      const key = entry.name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 3)
+    .map(({ entry }) => entry);
+}
 export function moderateRule(
   text: string,
   author: string,

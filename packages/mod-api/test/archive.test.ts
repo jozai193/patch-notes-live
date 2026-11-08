@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { expect, it } from 'vitest';
-import { matchArchive, moderateRule, tokens } from '../src/archive.js';
+import { matchArchive, closestArchive, moderateRule, tokens } from '../src/archive.js';
 import { parseClientMessage, parseServerMessage } from '../src/protocol.js';
 const entries = JSON.parse(
   await readFile(new URL('../../../mods/archive/index.json', import.meta.url), 'utf8'),
@@ -82,4 +82,14 @@ it('validates rule requests and bounded compile/result messages', () => {
       }),
     ),
   ).toBeDefined();
+});
+
+it('offers up to three ranked, uniquely named alternatives without turning a miss into a match', () => {
+  const request = 'make the player huge and translucent with wings';
+  expect(matchArchive(request, entries)).toBeUndefined();
+  const options = closestArchive(request, entries);
+  expect(options).toHaveLength(3);
+  expect(options[0]?.name).toBe('Huge player');
+  expect(new Set(options.map((entry) => entry.name)).size).toBe(3);
+  expect(closestArchive('unknown', [])).toEqual([]);
 });

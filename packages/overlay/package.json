@@ -9,7 +9,8 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "vite": "^8.3.5"
+    "vite": "^8.3.5",
+    "ws": "^8.22.0"
   },
   "dependencies": {
     "@patch-notes-live/engine": "0.0.0",

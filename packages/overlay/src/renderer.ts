@@ -189,6 +189,7 @@ export function render(
   aim: Vec,
   obs: boolean,
   time: number,
+  protectedPlayer = false,
 ): void {
   const dpr = ctx.canvas.width / CANVAS_WIDTH;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -219,6 +220,21 @@ export function render(
     if (e.kind === 'hazard') drawEntity(ctx, e, time, effects.isHit(e.id), aim);
   for (const e of snapshot.entities)
     if (e.kind !== 'hazard') drawEntity(ctx, e, time, effects.isHit(e.id), aim);
+  if (protectedPlayer) {
+    const player = snapshot.player;
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.strokeStyle = player.color;
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 3; i++) {
+      ctx.globalAlpha = 0.2 + 0.25 * (0.5 + 0.5 * Math.sin(time * 9 + i * 2));
+      ctx.beginPath();
+      ctx.arc(0, 0, player.radius + 7 + i * 4, time * 2 + i, time * 2 + i + Math.PI * 1.4);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
   effects.draw(ctx);
   if (!obs) {
     ctx.strokeStyle = '#48eaff99';

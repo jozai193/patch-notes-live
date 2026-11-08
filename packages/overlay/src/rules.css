@@ -171,19 +171,18 @@ canvas {
     monospace;
 }
 .compile-panel {
-  position: absolute;
+  position: relative;
   z-index: 5;
-  left: 44px;
-  top: 348px;
-  width: 420px;
-  max-height: 228px;
-  padding: 14px 16px;
+  width: 100%;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
   background: #060e21f5;
   border: 1px solid #48eaff88;
   border-left: 3px solid #48eaff;
   border-radius: 5px;
   box-shadow: 0 5px 30px #0008;
-  pointer-events: none;
+  pointer-events: auto;
 }
 .compile-panel h2 {
   color: #85f0ff;
@@ -287,5 +286,78 @@ canvas {
 .obs .rule-form,
 .obs .first-run,
 .obs .demo-badge {
+  display: none;
+}
+
+/* Feedback occupies a reserved sidebar row, outside the arena and all banners. */
+.sidebar.has-feedback {
+  grid-template-rows: 140px 174px minmax(0, 1fr) 58px;
+}
+.sidebar.has-feedback .archive-panel {
+  display: none;
+}
+.sidebar.has-feedback .telemetry .stats {
+  margin-bottom: 4px;
+}
+.sidebar.has-feedback .telemetry .panel-heading {
+  margin-bottom: 4px;
+}
+.sidebar.has-feedback .telemetry .stats strong {
+  font-size: 22px;
+}
+.sidebar.has-feedback .telemetry .hp-meter {
+  margin: 5px 0;
+}
+.sidebar.has-feedback .telemetry .time {
+  padding-top: 4px;
+}
+.compile-panel #compile-steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 8px 0;
+}
+.compile-panel #compile-steps li + li:before {
+  content: none;
+}
+#archive-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.archive-suggestion {
+  max-width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #48eaff66;
+  border-radius: 12px;
+  background: #112d46;
+  color: #b6f5ff;
+  font:
+    11px/1.3 Consolas,
+    monospace;
+  text-align: left;
+}
+.archive-suggestion:hover,
+.archive-suggestion:focus-visible {
+  background: #1c4764;
+  border-color: #48eaff;
+}
+.typing-assist {
+  position: absolute;
+  left: 40px;
+  top: 564px;
+  z-index: 6;
+  padding: 4px 8px;
+  background: #092336ed;
+  border: 1px solid #48eaff55;
+  border-radius: 10px;
+  color: #9cf4ff;
+  font:
+    11px Consolas,
+    monospace;
+  pointer-events: none;
+}
+.playfield:has(#game-over:not([hidden])) ~ .sidebar #compile-panel {
   display: none;
 }
