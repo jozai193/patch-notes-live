@@ -89,7 +89,21 @@ canvas {
 .sidebar {
   display: grid;
   grid-template-rows: 170px 198px minmax(0, 1fr) 58px;
+  grid-template-areas: 'telemetry' 'patches' 'library' 'bot';
   gap: 10px;
+}
+.sidebar .telemetry {
+  grid-area: telemetry;
+}
+.sidebar .patches {
+  grid-area: patches;
+}
+.sidebar .archive-panel,
+.sidebar .compile-panel {
+  grid-area: library;
+}
+.sidebar .bot-toggle {
+  grid-area: bot;
 }
 .sidebar .panel {
   padding: 12px;
@@ -174,8 +188,8 @@ canvas {
   position: relative;
   z-index: 5;
   width: 100%;
-  min-height: 0;
-  overflow: auto;
+  min-height: max-content;
+  overflow: visible;
   padding: 12px;
   background: #060e21f5;
   border: 1px solid #48eaff88;
@@ -203,8 +217,6 @@ canvas {
 }
 #compile-request {
   color: #e7f5ff;
-  max-height: 52px;
-  overflow: auto;
 }
 #compile-message {
   color: #9eb7d0;
@@ -289,9 +301,10 @@ canvas {
   display: none;
 }
 
-/* Feedback occupies a reserved sidebar row, outside the arena and all banners. */
+/* Feedback replaces the archive in a content-sized row, outside the arena/banners.
+   The active-patch list gives up spare height instead of clipping feedback text. */
 .sidebar.has-feedback {
-  grid-template-rows: 140px 174px minmax(0, 1fr) 58px;
+  grid-template-rows: 140px minmax(0, 1fr) max-content 58px;
 }
 .sidebar.has-feedback .archive-panel {
   display: none;

@@ -222,8 +222,8 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
 - Focused rule/name inputs temporarily enable autopilot with a chip; blur restores the previous manual/autopilot choice. Pause simulation ticks while onboarding is visible.
 - In standalone mode only, each patch apply receives 180 ticks (3s) of damage protection with a render-only shimmer. Keep this in an overlay host; engine, mod API and verifier rules are unchanged.
 - A no-match panel has its own title/message, no compile phases/progress, up to three ranked clickable archive suggestions, and a six-second dismissal.
-- Reserve a sidebar feedback slot away from arena/game-over/banners; hide feedback during game over.
-- Regression coverage includes actual DOM focus, paused ticks, no-match rendering and layout bounding boxes.
+- Reserve a content-sized sidebar feedback slot away from arena/game-over/banners; replace the Archive list while feedback is open and hide feedback during game over.
+- Regression coverage includes actual DOM focus, paused ticks, no-match rendering and layout bounding boxes. Both no-match (three chips) and compiling content must fit without scrolling at 1280x720 and 1024x768.
 - **Done when:** tsc, full npm test, lint and build:web pass; production preview with server=ws://127.0.0.1:9 survives 15s of typing and handles unknown rule → suggestion click → patch apply. Commit step 9 fixes only.
 
 ### Step 10: Clustering and voting (Day 3)
