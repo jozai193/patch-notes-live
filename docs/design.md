@@ -142,6 +142,20 @@ Pause attract work when hidden and dispose its sandbox when Play is pressed.
 
 ## Acceptance
 
+Polish details: the Play transition explicitly runs for 360ms (wipe), or 240ms
+(opacity-only crossfade with reduced motion), before the simulation starts. The
+diff rows share em-sized grid gutters, so their marks and text columns align.
+“Try one” uses two rows of whole chips and a More control; the archive disclosure
+lives beside “Archive · instant” instead of competing with the controls footer.
+Patch cards sit below the wave banner. Applied archive feedback says “Applied”
+and dismisses after two seconds. Your author label is “by you” in `--you`.
+
+Changelog symbols come from reviewed `change: add | remove | change` metadata,
+never title keywords. Archive collection preserves reviewed labels and kinds;
+new candidates need manual classification after source review. Reverts are remove
+events. The current archive adds entities/healing or changes existing tuning and
+behavior; fleeing changes enemy behavior and is marked `~`.
+
 - All existing game, sandbox, verifier and live/offline flows remain intact.
 - Browser coverage: landing gate, Enter/Play, phone overflow, reduced motion, bypass
   flags, token contrast, patch identities, intentional mod colors and feedback fit.

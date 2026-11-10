@@ -162,7 +162,14 @@
       <section class="composer" aria-label="Rewrite a rule">
         <form id="rule-form" class="rule-form" aria-label="Suggest a game rule">
           <label class="rule-entry"
-            ><span>Your next rule <small id="rule-mode">Archive mode</small></span
+            ><span
+              >Your next rule
+              <span class="rule-hint"
+                ><small id="rule-mode">Archive mode</small
+                ><small id="demo-badge" class="demo-badge">
+                  · AI-written patches. Run locally for live AI.</small
+                ></span
+              ></span
             ><input
               id="rule-input"
               maxlength="200"
@@ -185,12 +192,9 @@
         <div class="try-one">
           <span>Try one <small id="archive-count"></small></span>
           <div id="archive-list" aria-label="Archived patches"></div>
+          <button id="archive-more" type="button" aria-label="More archived patches">More →</button>
         </div>
       </section>
-      <div id="demo-badge" class="demo-badge">
-        Web demo: patches come from an archive of AI-written mods. Run locally for live Codex
-        patching.
-      </div>
       <section id="first-run" class="first-run" aria-label="How to play" hidden>
         <h2>The rules are yours.</h2>
         <p>

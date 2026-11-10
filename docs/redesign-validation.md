@@ -1,5 +1,9 @@
 # Patch-notes redesign validation
 
+Screenshots in `screenshots/redesign/` were refreshed on November 10 for
+[redesign polish](redesign-polish-validation.md), except `watchdog-revert.png`.
+The measurements below remain the original November 8 record.
+
 Fresh checks and browser captures on November 8, 2026.
 
 The design system was committed first as `75148f6` (`design: patch-notes design system`),

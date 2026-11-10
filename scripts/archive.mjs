@@ -11,6 +11,7 @@ execFileSync(
 const { verify } = await import('../packages/harness/dist/index.js');
 const { SandboxHost } = await import('../packages/mod-api/dist/index.js');
 const { tokens } = await import('../packages/mod-api/dist/archive.js');
+const { changeValid } = await import('../packages/mod-api/dist/protocol.js');
 const directory = resolve(root, 'mods/archive');
 await mkdir(directory, { recursive: true });
 const slug = (s) =>
@@ -20,6 +21,14 @@ const slug = (s) =>
     .replace(/^-|-$/g, '')
     .slice(0, 75);
 if (process.argv[2] === 'collect') {
+  // Classification is reviewed data, not a guess from source names or viewer text.
+  const reviewed = new Map(
+    JSON.parse(await readFile(resolve(directory, 'index.json'), 'utf8')).map((entry) => [
+      entry.file,
+      entry,
+    ]),
+  );
+  const ts = await import('typescript');
   const candidates = [];
   for (const file of [
     'split-on-hit',
@@ -65,6 +74,8 @@ if (process.argv[2] === 'collect') {
   const entries = [],
     provenance = [];
   for (const item of candidates) {
+    const file = slug(item.prefix + '-' + item.request) + '.js';
+    const review = reviewed.get(file);
     let source = await readFile(resolve(root, item.path), 'utf8');
     const original = await verify(source);
     if (!original.ok) {
@@ -77,9 +88,35 @@ if (process.argv[2] === 'collect') {
       provenance.push({ ...item, included: false });
       continue;
     }
+    if (!review || !changeValid(review.change))
+      throw Error(
+        `Read ${item.path} and add its name and change classification to index.json before collecting.`,
+      );
     const host = await SandboxHost.create([source]);
     const info = host.mods[0];
     host.dispose();
+    if (review.name !== info.name) {
+      const ast = ts.createSourceFile(
+        'mod.js',
+        source,
+        ts.ScriptTarget.ESNext,
+        true,
+        ts.ScriptKind.JS,
+      );
+      const exp = ast.statements.find((node) => ts.isExportAssignment(node));
+      const name =
+        exp &&
+        ts.isObjectLiteralExpression(exp.expression) &&
+        exp.expression.properties.find(
+          (node) => ts.isPropertyAssignment(node) && node.name.getText(ast) === 'name',
+        );
+      if (!name || !ts.isPropertyAssignment(name))
+        throw Error(`Cannot preserve reviewed name for ${item.path}`);
+      source =
+        source.slice(0, name.initializer.getStart(ast)) +
+        JSON.stringify(review.name) +
+        source.slice(name.initializer.end);
+    }
     if (!info.patchNotes) {
       const funny = {
         huge: 'Player size increased. Doorways are no longer covered by the warranty.',
@@ -94,7 +131,6 @@ if (process.argv[2] === 'collect') {
       const note = key
         ? funny[key]
         : `${info.name.slice(0, 65)} is now official policy. Balance has been notified and is refusing to comment.`;
-      const ts = await import('typescript');
       const ast = ts.createSourceFile(
         'mod.js',
         source,
@@ -116,7 +152,6 @@ if (process.argv[2] === 'collect') {
     const updated = await SandboxHost.create([source]);
     const mod = updated.mods[0];
     updated.dispose();
-    const file = slug(item.prefix + '-' + item.request) + '.js';
     if (entries.some((e) => e.file === file)) throw Error(`Duplicate archive filename ${file}`);
     await writeFile(resolve(directory, file), source);
     entries.push({
@@ -125,6 +160,7 @@ if (process.argv[2] === 'collect') {
       request: item.request,
       patchNotes: mod.patchNotes,
       tags: [...tokens(item.request)].slice(0, 12),
+      change: review.change,
     });
     provenance.push({ ...item, file, included: true });
     console.log(`ARCHIVED ${file}: PASS ${report.durationMs.toFixed(0)} ms`);
@@ -138,7 +174,8 @@ if (process.argv[2] === 'collect') {
 } else {
   const entries = JSON.parse(await readFile(resolve(directory, 'index.json'), 'utf8'));
   if (!Array.isArray(entries) || !entries.length) throw Error('Archive index is empty.');
-  const files = new Set();
+  const files = new Set(),
+    names = new Set();
   let failed = 0;
   const started = performance.now();
   for (const entry of entries) {
@@ -147,12 +184,16 @@ if (process.argv[2] === 'collect') {
     files.add(entry.file);
     if (
       typeof entry.name !== 'string' ||
+      !entry.name.trim() ||
+      names.has(entry.name.trim().toLowerCase()) ||
       typeof entry.request !== 'string' ||
       typeof entry.patchNotes !== 'string' ||
       entry.patchNotes.length > 140 ||
-      !Array.isArray(entry.tags)
+      !Array.isArray(entry.tags) ||
+      !changeValid(entry.change)
     )
       throw Error('Invalid archive metadata.');
+    names.add(entry.name.trim().toLowerCase());
     const source = await readFile(resolve(directory, entry.file), 'utf8');
     const report = await verify(source);
     const host = await SandboxHost.create([source]);

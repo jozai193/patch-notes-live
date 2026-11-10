@@ -24,6 +24,7 @@ const request = (id: string, text = 'make the player huge') => ({
   author: 'You',
 });
 const cached: ArchivedMod = {
+  change: 'add',
   file: 'huge.js',
   name: 'Huge player',
   request: 'make the player huge',

@@ -1,4 +1,7 @@
 export const PROTOCOL_VERSION = 1;
+export type PatchChange = 'add' | 'remove' | 'change';
+export const changeValid = (value: unknown): value is PatchChange =>
+  value === 'add' || value === 'remove' || value === 'change';
 export interface Patch {
   patchId: string;
   name: string;
@@ -7,6 +10,7 @@ export interface Patch {
   author: string;
   source: string;
   origin?: 'live' | 'archive';
+  change?: PatchChange;
 }
 export interface ActivePatch {
   patchId: string;
@@ -90,6 +94,7 @@ export function patchValid(x: unknown): x is Patch {
         !/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/.test(x.patchNotes))) &&
     text(x.author, 80) &&
     (x.origin === undefined || x.origin === 'live' || x.origin === 'archive') &&
+    (x.change === undefined || changeValid(x.change)) &&
     sourceValid(x.source)
   );
 }
@@ -155,7 +160,16 @@ export function parseServerMessage(raw: string): ServerMessage | undefined {
         x.patches.every(
           (p) =>
             patchValid(p) &&
-            keys(p, ['patchId', 'name', 'description', 'patchNotes', 'author', 'source', 'origin']),
+            keys(p, [
+              'patchId',
+              'name',
+              'description',
+              'patchNotes',
+              'author',
+              'source',
+              'origin',
+              'change',
+            ]),
         ) &&
         new Set(x.patches.map((p) => p.patchId)).size === x.patches.length
       )
@@ -171,6 +185,7 @@ export function parseServerMessage(raw: string): ServerMessage | undefined {
           'patchNotes',
           'author',
           'source',
+          'change',
           'origin',
         ]) &&
         patchValid(x)

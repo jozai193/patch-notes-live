@@ -1,11 +1,17 @@
 export default {
-  patchNotes: "Split on hit is now official policy. Balance has been notified and is refusing to comment.",
-  name: 'Split on hit',
+  patchNotes:
+    'Split on hit is now official policy. Balance has been notified and is refusing to comment.',
+  name: 'Split and replace',
   description: 'Enemies split once into two smaller enemies when hit.',
   hooks: {
     onHit(g, event) {
       const enemy = event.target;
-      if (enemy.kind !== 'enemy' || enemy.tags.includes('split-child') || enemy.tags.includes('split-done')) return;
+      if (
+        enemy.kind !== 'enemy' ||
+        enemy.tags.includes('split-child') ||
+        enemy.tags.includes('split-done')
+      )
+        return;
       if (g.entities().length > 296) return;
       g.set(enemy, { tags: [...enemy.tags, 'split-done'] });
       const radius = Math.max(1, Math.min(64, enemy.radius * 0.65));

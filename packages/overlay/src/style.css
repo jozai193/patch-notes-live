@@ -141,7 +141,6 @@ kbd {
   transform-origin: center;
   background: var(--background);
   overflow: hidden;
-  animation: game-in 220ms ease-out;
 }
 .topbar {
   position: absolute;
@@ -377,7 +376,7 @@ kbd {
 .patch-notice {
   position: absolute;
   left: 20px;
-  top: 100px;
+  bottom: 96px;
   z-index: 5;
   max-width: 430px;
   padding: 14px 18px;
@@ -395,6 +394,15 @@ kbd {
   display: block;
   margin-top: 8px;
   font: 13px/1.6 var(--font-code);
+}
+.patch-notice .notice-author {
+  display: inline;
+  margin: 0;
+  font: inherit;
+  color: var(--muted);
+}
+.patch-notice .your-author {
+  color: var(--you);
 }
 .patch-notice.reverted {
   top: auto;
@@ -473,17 +481,24 @@ kbd {
   pointer-events: none;
 }
 .game-footer {
+  line-height: 16px;
   position: absolute;
   left: 24px;
   right: 24px;
-  bottom: 8px;
+  bottom: 6px;
   display: flex;
+  align-items: center;
   justify-content: space-between;
   color: var(--muted);
   font-size: 12px;
 }
 .game-footer span > span {
   margin: 0 6px;
+}
+.game-footer kbd {
+  line-height: 12px;
+  padding: 0 3px;
+  vertical-align: middle;
 }
 .perf-readout {
   position: absolute;
@@ -534,15 +549,13 @@ kbd {
     transform: none;
   }
 }
-@keyframes game-in {
-  from {
-    opacity: 0;
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    opacity: 1;
-    clip-path: inset(0);
-  }
+.entering-game #landing {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  overflow: hidden;
+  background: var(--background);
+  pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
   *,

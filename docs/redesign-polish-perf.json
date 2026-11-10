@@ -1,0 +1,90 @@
+{
+  "date": "2026-11-10",
+  "fixture": "190 possible spawns (excludes 120px around player), plus real Heal on kill and Gravity flip archive mods; actual QuickJS/renderer/watchdog; mocked delivery, not a harness benchmark",
+  "devicePixelRatio": 1.0000000149011612,
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+  "readouts": [
+    {
+      "tick": 356,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.311 / p95 0.500 ms\n178 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 417,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.313 / p95 0.500 ms\n178 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 477,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.308 / p95 0.500 ms\n178 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 537,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.309 / p95 0.500 ms\n177 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 597,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.316 / p95 0.500 ms\n176 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 657,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.326 / p95 0.500 ms\n183 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 717,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.329 / p95 0.500 ms\n182 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 778,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.331 / p95 0.500 ms\n182 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 838,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.327 / p95 0.500 ms\n180 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 898,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.325 / p95 0.500 ms\n180 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 959,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.321 / p95 0.500 ms\n180 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 1019,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.313 / p95 0.500 ms\n177 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 1079,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.312 / p95 0.500 ms\n176 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 1139,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.317 / p95 0.500 ms\n176 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    },
+    {
+      "tick": 1199,
+      "alive": true,
+      "readout": "FPS 144.0  FRAME p95 7.10 ms\nSANDBOX mean 0.320 / p95 0.500 ms\n177 entities · 3 patches\n300/300 ticks · 300/300 frames"
+    }
+  ],
+  "summary": {
+    "fps": [144, 144],
+    "frameP95Ms": [7.1, 7.1],
+    "sandboxMeanMs": [0.308, 0.331],
+    "sandboxP95Ms": [0.5, 0.5],
+    "entities": [176, 183]
+  }
+}

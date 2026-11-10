@@ -1,5 +1,6 @@
 import type { Patch } from '@patch-notes-live/mod-api/protocol';
 import type { ActivePatch } from '@patch-notes-live/mod-api/protocol';
+import { authorLabel, changeMark } from './changelog.js';
 interface FeedEntry {
   patch: Patch;
   version: string;
@@ -55,21 +56,18 @@ export class PatchFeed {
       const note = document.createElement('p');
       note.className = 'patch-line';
       const mark = document.createElement('span');
-      mark.className = entry.reason
-        ? 'minus'
-        : /gravity|lava|slow|arena|wrap|moon|physics/i.test(entry.patch.name)
-          ? 'changed'
-          : 'plus';
-      mark.textContent = entry.reason ? '−' : mark.className === 'changed' ? '~' : '+';
+      const change = changeMark(entry.reason ? 'remove' : (entry.patch.change ?? 'add'));
+      mark.className = change.className;
+      mark.textContent = change.symbol;
       const text = document.createElement('span');
       text.textContent = entry.reason
         ? `Reverted: ${entry.reason}`
         : entry.patch.patchNotes || entry.patch.description;
       note.append(mark, text);
       const author = document.createElement('small');
-      const yours = entry.patch.author.toLowerCase() === currentAuthor.toLowerCase();
+      const { text: label, yours } = authorLabel(entry.patch.author, currentAuthor);
       author.className = yours ? 'your-author' : '';
-      author.textContent = `by ${entry.patch.author}${yours ? ' (you)' : ''}${entry.patch.origin === 'archive' ? ' · archive' : ''}`;
+      author.textContent = `${label}${entry.patch.origin === 'archive' ? ' · archive' : ''}`;
       row.append(header, name, note, author);
       container.append(row);
     }

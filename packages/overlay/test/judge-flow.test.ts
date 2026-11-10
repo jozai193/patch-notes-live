@@ -6,6 +6,18 @@ import { parseClientMessage } from '@patch-notes-live/mod-api/protocol';
 import { BrowserDOM } from './browser-dom.js';
 let browser: BrowserDOM, server: ViteDevServer, base: string;
 let hub: WebSocketServer, hubURL: string;
+const observeTransition = `globalThis.transitionResult=new Promise(resolve=>{
+  const root=document.documentElement,landing=document.getElementById('landing');
+  let started,animation;
+  const observer=new MutationObserver(()=>{
+    if(started===undefined&&root.classList.contains('entering-game')){
+      started=performance.now();
+      const effect=landing.getAnimations()[0]?.effect;
+      animation={duration:effect?.getTiming().duration,wipe:effect?.getKeyframes().some(f=>f.clipPath!==undefined)};
+    }
+    if(started!==undefined&&landing.hidden){observer.disconnect();resolve({elapsed:performance.now()-started,...animation});}
+  });observer.observe(root,{attributes:true,subtree:true});
+});true`;
 beforeAll(async () => {
   server = await createServer({
     configFile: fileURLToPath(new URL('../vite.config.ts', import.meta.url)),
@@ -55,6 +67,7 @@ it('runs real archive patches in attract mode but leaves the playable world at t
   await browser.wait("Number(document.getElementById('attract-game').dataset.patches)>=2", 12000);
   expect(await browser.evaluate("document.getElementById('game').dataset.tick")).toBe('0');
   expect(await browser.evaluate("document.getElementById('stage').hidden")).toBe(true);
+  await browser.evaluate(observeTransition);
   await browser.call('Input.dispatchKeyEvent', {
     type: 'keyDown',
     key: 'Enter',
@@ -68,6 +81,13 @@ it('runs real archive patches in attract mode but leaves the playable world at t
     windowsVirtualKeyCode: 13,
   });
   await browser.wait("Number(document.getElementById('game').dataset.tick)>0");
+  const transition = await browser.evaluate<{ elapsed: number; duration: number; wipe: boolean }>(
+    'globalThis.transitionResult',
+  );
+  expect(transition.duration).toBe(360);
+  expect(transition.wipe).toBe(true);
+  expect(transition.elapsed).toBeGreaterThanOrEqual(300);
+  expect(transition.elapsed).toBeLessThanOrEqual(450);
   expect(await browser.evaluate("document.getElementById('landing').hidden")).toBe(true);
   expect(await browser.evaluate("document.getElementById('patch-count').textContent")).toBe(
     '0 / 3',
@@ -96,8 +116,20 @@ it('fits a 390px phone and presents a static diff under reduced motion', async (
         "getComputedStyle(document.getElementById('notes-ticker-track')).animationName",
       ),
     ).toBe('none');
+    const gutters = await browser.evaluate<number[]>(
+      "Array.from(document.querySelectorAll('.hero-gutter')).map(e=>{const r=e.getBoundingClientRect();return r.x+r.width/2})",
+    );
+    expect(Math.abs(gutters[0]! - gutters[1]!)).toBeLessThan(0.5);
+    await browser.evaluate(observeTransition);
     await browser.evaluate("document.getElementById('play').click()");
     await browser.wait("Number(document.getElementById('game').dataset.tick)>0");
+    const transition = await browser.evaluate<{ elapsed: number; duration: number; wipe: boolean }>(
+      'globalThis.transitionResult',
+    );
+    expect(transition.duration).toBe(240);
+    expect(transition.wipe).toBe(false);
+    expect(transition.elapsed).toBeGreaterThanOrEqual(180);
+    expect(transition.elapsed).toBeLessThanOrEqual(450);
   } finally {
     await browser.call('Emulation.setEmulatedMedia', { features: [] });
     await browser.call('Emulation.setDeviceMetricsOverride', {
@@ -188,11 +220,90 @@ it('renders a distinct no-match state with clickable suggestions and dismisses i
   await browser.wait("document.getElementById('compile-panel').dataset.state==='no-match'");
   await browser.wait("document.getElementById('compile-panel').hidden", 8000);
 }, 15000);
+it('pages whole archive chips in two rows and makes every uniquely named entry reachable', async () => {
+  await browser.go(base + '?play=1&server=off');
+  const choices = await browser.evaluate<{ seen: string[]; total: number }>(`(async()=>{
+    await document.fonts.ready;
+    const seen=new Set(),total=document.querySelectorAll('.archive-item').length;
+    for(let i=0;i<total&&seen.size<total;i++){
+      for(const button of document.querySelectorAll('.archive-item:not([hidden])'))seen.add(button.textContent);
+      document.getElementById('archive-more').click();
+    }
+    return {seen:[...seen],total};
+  })()`);
+  expect(choices.seen).toHaveLength(choices.total);
+  expect(choices.seen).toContain('Split and replace');
+  expect(choices.seen.filter((name) => name === 'Split on hit')).toHaveLength(1);
+});
+it('keeps the patch card below a simultaneous wave banner and dismisses applied archive feedback in two seconds', async () => {
+  await browser.go(base + '?play=1&server=off&bot=1');
+  await browser.evaluate(`(()=>{
+    globalThis.waveCardChecks=[];
+    const fill=CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText=function(text,x,y,...rest){
+      fill.call(this,text,x,y,...rest);
+      const card=document.getElementById('patch-notice');
+      if(this.canvas.id!=='game'||!String(text).startsWith('Wave ')||card.hidden)return;
+      const m=this.measureText(text),t=this.getTransform(),r=this.canvas.getBoundingClientRect(),scale=r.width/this.canvas.width,b=card.getBoundingClientRect();
+      const top=r.top+((y-m.actualBoundingBoxAscent)*t.d+t.f)*scale,bottom=r.top+((y+m.actualBoundingBoxDescent)*t.d+t.f)*scale;
+      globalThis.waveCardChecks.push({top,bottom,cardTop:b.top,cardBottom:b.bottom});
+    };
+    globalThis.archiveAppliedAt=undefined;globalThis.archiveHiddenAt=undefined;
+    const panel=document.getElementById('compile-panel');
+    const observer=new MutationObserver(()=>{
+      if(document.getElementById('compile-time').textContent==='Applied')globalThis.archiveAppliedAt??=performance.now();
+      if(globalThis.archiveAppliedAt!==undefined&&panel.hidden){globalThis.archiveHiddenAt=performance.now();observer.disconnect();}
+    });observer.observe(panel,{attributes:true,childList:true,subtree:true,characterData:true});
+    document.getElementById('first-run-dismiss').click();document.querySelector('.archive-item').click();
+  })()`);
+  await browser.wait(
+    "document.querySelector('#patch-notice strong')?.textContent.startsWith('v1.1')",
+  );
+  expect(
+    await browser.evaluate("document.querySelector('#patch-notice .your-author').textContent"),
+  ).toBe('by you');
+  expect(await browser.evaluate("document.querySelector('.patch-entry small').textContent")).toBe(
+    'by you · archive',
+  );
+  await browser.wait('globalThis.archiveHiddenAt!==undefined', 3500);
+  const measurements = await browser.evaluate<{
+    elapsed: number;
+    checks: { top: number; bottom: number; cardTop: number; cardBottom: number }[];
+  }>(
+    `({elapsed:globalThis.archiveHiddenAt-globalThis.archiveAppliedAt,checks:globalThis.waveCardChecks})`,
+  );
+  expect(measurements.elapsed).toBeGreaterThanOrEqual(1800);
+  expect(measurements.elapsed).toBeLessThanOrEqual(2600);
+  expect(measurements.checks.length).toBeGreaterThan(0);
+  for (const box of measurements.checks)
+    expect(box.cardTop >= box.bottom || box.cardBottom <= box.top).toBe(true);
+  // A fourth apply expires the oldest patch. Its revert banner owns the slot first.
+  for (const [name, count] of [
+    ['Gravity flip every 10s', '2 / 3'],
+    ['Enemies tiny and fast', '3 / 3'],
+    ['Heal on kill', '3 / 3'],
+  ]) {
+    await browser.evaluate(
+      `Array.from(document.querySelectorAll('.archive-item')).find(e=>e.textContent===${JSON.stringify(name)}).click()`,
+    );
+    await browser.wait(
+      `document.getElementById('patch-count').textContent===${JSON.stringify(count)}`,
+    );
+  }
+  await browser.wait("!document.getElementById('patch-reverted').hidden");
+  await browser.evaluate('new Promise(resolve=>setTimeout(resolve,1000))');
+  expect(await browser.evaluate("document.getElementById('patch-notice').hidden")).toBe(true);
+  expect(await browser.evaluate("document.getElementById('patch-count').textContent")).toBe(
+    '3 / 3',
+  );
+}, 10000);
 it.each([
   { width: 1280, height: 720, state: 'no-match' },
   { width: 1024, height: 768, state: 'no-match' },
+  { width: 800, height: 600, state: 'no-match' },
   { width: 1280, height: 720, state: 'compile' },
   { width: 1024, height: 768, state: 'compile' },
+  { width: 800, height: 600, state: 'compile' },
 ])(
   'fits all $state content at $width × $height without scrolling or overlaps',
   async ({ width, height, state }) => {
@@ -238,10 +349,16 @@ it.each([
       chips: number;
       phases: number;
       progress: number;
+      composer: { x: number; y: number; width: number; height: number };
+      disclosure: { x: number; y: number; width: number; height: number };
+      footer: { x: number; y: number; width: number; height: number };
+      choices: { x: number; y: number; width: number; height: number }[];
+      choiceBounds: { x: number; y: number; width: number; height: number };
     }>(
       `(()=>{
       const panel=document.getElementById('compile-panel'),gameOver=document.getElementById('game-over'),banner=document.getElementById('patch-reverted'),applyBanner=document.getElementById('patch-notice'),request=document.getElementById('compile-request');
-      const content={panel:panel.getBoundingClientRect().toJSON(),clientHeight:panel.clientHeight,scrollHeight:panel.scrollHeight,clientWidth:panel.clientWidth,scrollWidth:panel.scrollWidth,requestClientHeight:request.clientHeight,requestScrollHeight:request.scrollHeight,chips:document.querySelectorAll('.archive-suggestion').length,phases:document.getElementById('compile-steps').getClientRects().length,progress:document.getElementById('compile-progress').getClientRects().length};
+      const box=id=>document.getElementById(id).getBoundingClientRect().toJSON();
+      const content={panel:panel.getBoundingClientRect().toJSON(),clientHeight:panel.clientHeight,scrollHeight:panel.scrollHeight,clientWidth:panel.clientWidth,scrollWidth:panel.scrollWidth,requestClientHeight:request.clientHeight,requestScrollHeight:request.scrollHeight,chips:document.querySelectorAll('.archive-suggestion').length,phases:document.getElementById('compile-steps').getClientRects().length,progress:document.getElementById('compile-progress').getClientRects().length,composer:document.querySelector('.composer').getBoundingClientRect().toJSON(),disclosure:box('demo-badge'),footer:document.querySelector('.game-footer').getBoundingClientRect().toJSON(),choices:Array.from(document.querySelectorAll('.archive-item:not([hidden])')).map(e=>e.getBoundingClientRect().toJSON()),choiceBounds:box('archive-list')};
       gameOver.hidden=false;banner.hidden=false;applyBanner.hidden=false;
       return {...content,arena:gameOver.getBoundingClientRect().toJSON(),hiddenDuringGameOver:panel.getClientRects().length===0,restart:document.getElementById('restart').getBoundingClientRect().toJSON(),banner:banner.getBoundingClientRect().toJSON(),applyBanner:applyBanner.getBoundingClientRect().toJSON()};
     })()`,
@@ -265,6 +382,20 @@ it.each([
     expect(overlap(bounds.panel, bounds.banner)).toBe(false);
     expect(overlap(bounds.panel, bounds.applyBanner)).toBe(false);
     expect(bounds.hiddenDuringGameOver).toBe(true);
+    expect(overlap(bounds.composer, bounds.footer)).toBe(false);
+    expect(overlap(bounds.disclosure, bounds.footer)).toBe(false);
+    expect(bounds.footer.y + bounds.footer.height).toBeLessThanOrEqual(height);
+    expect(new Set(bounds.choices.map((choice) => choice.y)).size).toBeLessThanOrEqual(2);
+    expect(bounds.choices.length).toBeGreaterThan(0);
+    for (const choice of bounds.choices) {
+      expect(choice.x).toBeGreaterThanOrEqual(bounds.choiceBounds.x - 0.1);
+      expect(choice.x + choice.width).toBeLessThanOrEqual(
+        bounds.choiceBounds.x + bounds.choiceBounds.width + 0.1,
+      );
+      expect(choice.y + choice.height).toBeLessThanOrEqual(
+        bounds.choiceBounds.y + bounds.choiceBounds.height + 0.1,
+      );
+    }
   },
   10000,
 );

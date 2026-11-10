@@ -7,12 +7,14 @@ import {
   NO_ARCHIVE_MATCH,
 } from '@patch-notes-live/mod-api/archive';
 import type { ArchivedMod } from '@patch-notes-live/mod-api/archive';
+import { changeValid } from '@patch-notes-live/mod-api/protocol';
 import type {
   ClientMessage,
   ServerMessage,
   CompilePhase,
 } from '@patch-notes-live/mod-api/protocol';
 import type { PatchManager } from './patch-manager.js';
+import { ArchiveChoices } from './archive-choices.js';
 const files = import.meta.glob('../../../mods/archive/*.js', {
   query: '?raw',
   import: 'default',
@@ -21,7 +23,8 @@ const files = import.meta.glob('../../../mods/archive/*.js', {
 export const archive: ArchivedMod[] = index.map((entry) => {
   const source = files[`../../../mods/archive/${entry.file}`];
   if (!source) throw Error(`Missing archive mod: ${entry.file}`);
-  return { ...entry, source };
+  if (!changeValid(entry.change)) throw Error(`Invalid archive change: ${entry.file}`);
+  return { ...entry, change: entry.change, source };
 });
 export class RuleUI {
   private connected = false;
@@ -68,17 +71,9 @@ export class RuleUI {
       void this.submit();
     });
     const library = get('archive-list');
-    for (const entry of archive) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'archive-item';
-      button.textContent = entry.name;
-      button.title = entry.patchNotes;
-      button.addEventListener('click', () => {
-        void this.applyArchive(entry, 'Archive patch selected — no live AI generation.');
-      });
-      library.append(button);
-    }
+    new ArchiveChoices(library, get<HTMLButtonElement>('archive-more'), archive, (entry) => {
+      void this.applyArchive(entry, 'Archive patch selected — no live AI generation.');
+    });
     get('archive-count').textContent = String(archive.length);
     this.setConnected(false);
   }
@@ -226,13 +221,14 @@ export class RuleUI {
         archivePatch(entry, `archive-${Date.now()}-${++this.localId}`, author),
       );
       this.showPhase('passed', label);
+      this.timer.textContent = 'Applied';
       this.options.notice(label);
     } catch (error) {
       const reason = error instanceof Error ? error.message : 'Archive load failed.';
       this.showPhase('failed', reason);
       this.options.notice(reason, true);
     } finally {
-      this.finish();
+      this.finish(this.phase === 'passed' ? 2000 : 8000);
     }
   }
   private finish(duration = 8000): void {
@@ -259,7 +255,8 @@ export class RuleUI {
         this.showPhase(event.status === 'rejected' ? 'rejected' : 'failed', event.reason);
         this.options.notice(event.reason, true);
       }
-      this.finish();
+      if (event.archived) this.timer.textContent = 'Applied';
+      this.finish(event.archived ? 2000 : 8000);
       return true;
     }
     return false;

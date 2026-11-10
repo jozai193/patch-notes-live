@@ -7,7 +7,8 @@
     "tags": [
       "split",
       "hit"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "sample-gravity-flip-every-10s.js",
@@ -18,7 +19,8 @@
       "gravity",
       "flip",
       "10s"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "sample-floor-is-lava.js",
@@ -28,7 +30,8 @@
     "tags": [
       "floor",
       "lava"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "sample-enemies-tiny-and-fast.js",
@@ -39,7 +42,8 @@
       "enemy",
       "tiny",
       "fast"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "sample-heal-on-kill.js",
@@ -49,11 +53,12 @@
     "tags": [
       "heal",
       "kill"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "generated-enemies-split-in-two-when-hit.js",
-    "name": "Split on hit",
+    "name": "Split and replace",
     "request": "enemies split in two when hit",
     "patchNotes": "Split on hit is now official policy. Balance has been notified and is refusing to comment.",
     "tags": [
@@ -61,7 +66,8 @@
       "split",
       "two",
       "hit"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "generated-gravity-pulls-everything-toward-the-center.js",
@@ -73,7 +79,8 @@
       "pulls",
       "toward",
       "center"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-00-enemies-explode-into-3-tiny-ones-when-they-die.js",
@@ -88,7 +95,8 @@
       "ones",
       "they",
       "die"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "bench-2026-10-28-01-make-the-player-huge.js",
@@ -98,7 +106,8 @@
     "tags": [
       "player",
       "huge"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-02-every-5-seconds-everything-goes-slow-mo-for-1-second.js",
@@ -113,7 +122,8 @@
       "mo",
       "1",
       "second"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-03-enemies-run-away-from-you-lol.js",
@@ -125,7 +135,8 @@
       "run",
       "away",
       "player"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-04-bullets-bounce-off-the-walls.js",
@@ -137,7 +148,8 @@
       "bounce",
       "off",
       "walls"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-06-rainbow-enemies-that-keep-changing-color.js",
@@ -150,7 +162,8 @@
       "that",
       "keep",
       "changing"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-07-lava-on-the-left-half-of-the-map.js",
@@ -162,7 +175,8 @@
       "left",
       "half",
       "arena"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "bench-2026-10-28-08-slow-motion-when-my-hp-is-low.js",
@@ -174,7 +188,8 @@
       "motion",
       "hp",
       "low"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-09-heal-1-hp-every-second.js",
@@ -186,7 +201,8 @@
       "1",
       "hp",
       "second"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "bench-2026-10-28-10-the-arena-keeps-shrinking.js",
@@ -197,7 +213,8 @@
       "arena",
       "keeps",
       "shrinking"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-11-enemies-get-faster-every-time-you-kill-one.js",
@@ -212,7 +229,8 @@
       "player",
       "kill",
       "one"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-12-health-pickups-chase-the-player.js",
@@ -224,7 +242,8 @@
       "pickups",
       "chase",
       "player"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-13-wrap-around-the-screen-edges-like-asteroids.js",
@@ -237,7 +256,8 @@
       "arena",
       "edges",
       "like"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-14-random-meteor-showers.js",
@@ -247,7 +267,8 @@
     "tags": [
       "random",
       "meteor"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "bench-2026-10-28-15-killed-enemies-come-back-once-as-green-ghosts.js",
@@ -263,7 +284,8 @@
       "as",
       "green",
       "ghost"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "bench-2026-10-28-16-moon-gravity-pls.js",
@@ -272,7 +294,8 @@
     "patchNotes": "Gravity has been reassigned. Please direct complaints toward the ceiling.",
     "tags": [
       "gravity"
-    ]
+    ],
+    "change": "change"
   },
   {
     "file": "bench-2026-10-28-17-boss-fight-a-giant-enemy-with-500-hp-every-30-seconds.js",
@@ -288,7 +311,8 @@
       "hp",
       "30",
       "seconds"
-    ]
+    ],
+    "change": "add"
   },
   {
     "file": "bench-2026-10-28-18-enemies-orbit-around-the-player-instead-of-charging.js",
@@ -302,6 +326,7 @@
       "player",
       "instead",
       "charging"
-    ]
+    ],
+    "change": "change"
   }
 ]

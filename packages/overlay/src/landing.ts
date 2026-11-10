@@ -2,6 +2,7 @@ import readme from '../../../README.md?raw';
 import { archive } from './rules.js';
 import { AttractMode } from './attract.js';
 import { reducedMotion } from './tokens.js';
+import { changeMark } from './changelog.js';
 const examples = [
   {
     name: 'Enemies run away',
@@ -35,7 +36,7 @@ export class Landing {
   private started = performance.now();
   private signature = '';
   private closed = false;
-  constructor(private readonly play: () => void) {
+  constructor(private readonly play: () => Promise<void>) {
     this.attract = new AttractMode(document.getElementById('attract-game') as HTMLCanvasElement);
     void this.attract.start().catch(() => {
       document.getElementById('attract-note')!.textContent =
@@ -63,13 +64,9 @@ export class Landing {
         note.className = 'ticker-note';
         if (repeat) note.setAttribute('aria-hidden', 'true');
         const mark = document.createElement('span');
-        mark.textContent = /away/i.test(entry.name)
-          ? '−'
-          : /gravity|lava/i.test(entry.name)
-            ? '~'
-            : '+';
-        mark.className =
-          mark.textContent === '+' ? 'plus' : mark.textContent === '−' ? 'minus' : 'changed';
+        const change = changeMark(entry.change);
+        mark.textContent = change.symbol;
+        mark.className = change.className;
         const text = document.createElement('span');
         text.textContent = entry.patchNotes;
         note.append(mark, text);
@@ -92,7 +89,7 @@ export class Landing {
   private enter(): void {
     if (this.closed) return;
     this.dispose();
-    this.play();
+    void this.play();
   }
   update(now: number): void {
     if (this.closed) return;

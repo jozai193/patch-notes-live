@@ -1,10 +1,11 @@
-import type { Patch } from './protocol.js';
+import type { Patch, PatchChange } from './protocol.js';
 export interface ArchiveEntry {
   file: string;
   name: string;
   request: string;
   patchNotes: string;
   tags: string[];
+  change: PatchChange;
 }
 export interface ArchivedMod extends ArchiveEntry {
   source: string;
@@ -131,6 +132,7 @@ export function archivePatch(entry: ArchivedMod, patchId: string, author: string
     author,
     source: entry.source,
     origin: 'archive',
+    change: entry.change,
   };
 }
 export const NO_ARCHIVE_MATCH =

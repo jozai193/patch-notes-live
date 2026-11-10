@@ -45,13 +45,21 @@
   min-height: 225px;
   max-width: 1120px;
 }
+#hero-lines {
+  display: grid;
+  grid-template-columns: 0.8em minmax(0, 1fr);
+  column-gap: 0.12em;
+}
 .hero-row {
-  display: flex;
-  gap: 18px;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  column-gap: inherit;
 }
 .hero-gutter {
-  width: 32px;
-  flex-shrink: 0;
+  width: 0.8em;
+  justify-self: center;
+  text-align: center;
   font-weight: 400;
 }
 .hero-row.old {
@@ -369,12 +377,6 @@
     font-size: 53px;
     letter-spacing: -2px;
     min-height: 234px;
-  }
-  .hero-gutter {
-    width: 18px;
-  }
-  .hero-row {
-    gap: 8px;
   }
   .hero-row.old {
     font-size: 0.65em;

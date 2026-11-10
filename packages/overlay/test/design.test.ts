@@ -2,6 +2,17 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { expect, it } from 'vitest';
 import { PatchFeed } from '../src/patch-feed.js';
 import { headlineFrame } from '../src/landing.js';
+import { authorLabel, changeMark } from '../src/changelog.js';
+it('credits the current author as by you, including case/space differences', () => {
+  expect(authorLabel('You', 'You')).toEqual({ text: 'by you', yours: true });
+  expect(authorLabel('  Ada  ', 'ada')).toEqual({ text: 'by you', yours: true });
+  expect(authorLabel('Lin', 'Ada')).toEqual({ text: 'by Lin', yours: false });
+});
+it('uses explicit changelog data rather than title keywords', () => {
+  expect(changeMark('add')).toEqual({ symbol: '+', className: 'plus' });
+  expect(changeMark('remove')).toEqual({ symbol: '−', className: 'minus' });
+  expect(changeMark('change')).toEqual({ symbol: '~', className: 'changed' });
+});
 it('keeps the headline valid when the first queued RAF predates initialization', () => {
   expect(headlineFrame(-1, false)).toEqual({ example: 0, diff: false, characters: 0 });
   expect(headlineFrame(1900, false).diff).toBe(true);

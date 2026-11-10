@@ -15,6 +15,8 @@ import { RuleUI, firstRun } from './rules.js';
 import { theme } from './tokens.js';
 import { PatchFeed } from './patch-feed.js';
 import { Landing } from './landing.js';
+import { revealGame } from './transition.js';
+import { authorLabel } from './changelog.js';
 import '@fontsource/bricolage-grotesque/latin-600.css';
 import '@fontsource/bricolage-grotesque/latin-800.css';
 import '@fontsource/dm-sans/latin-400.css';
@@ -35,6 +37,7 @@ function element<T extends HTMLElement>(id: string): T {
 
 const options = readOptions(window.location.search);
 let playing = options.play || options.obs;
+let entering = false;
 let landing: Landing | undefined;
 const feed = new PatchFeed();
 document.documentElement.classList.toggle('playing', playing);
@@ -65,12 +68,24 @@ let effects = new Effects();
 let connection: HubConnection | undefined;
 let noticeUntil = 0;
 let revertUntil = 0;
-let pendingNotice: { patchId: string; text: string; notes: string | undefined } | undefined;
+let pendingNotice:
+  { patchId: string; text: string; author: string; notes: string | undefined } | undefined;
 
-function notice(text: string, reverted = false, notes?: string): void {
+function notice(text: string, reverted = false, notes?: string, author?: string): void {
+  if (!reverted && performance.now() < revertUntil) return;
   const node = element(reverted ? 'patch-reverted' : 'patch-notice');
   const title = document.createElement('strong');
   title.textContent = text;
+  if (author) {
+    const label = authorLabel(
+      author,
+      element<HTMLInputElement>('rule-author').value.trim() || 'You',
+    );
+    const by = document.createElement('span');
+    by.textContent = label.text;
+    by.className = `notice-author${label.yours ? ' your-author' : ''}`;
+    title.append(' ', by);
+  }
   node.replaceChildren(title);
   if (notes) {
     const detail = document.createElement('span');
@@ -79,8 +94,11 @@ function notice(text: string, reverted = false, notes?: string): void {
   }
   node.classList.toggle('reverted', reverted);
   node.hidden = false;
-  if (reverted) revertUntil = performance.now() + 8000;
-  else noticeUntil = performance.now() + 6000;
+  if (reverted) {
+    element('patch-notice').hidden = true;
+    noticeUntil = 0;
+    revertUntil = performance.now() + 8000;
+  } else noticeUntil = performance.now() + 6000;
 }
 const params = new URLSearchParams(location.search);
 const seconds = Number(params.get('patchLifetime') ?? 180);
@@ -96,7 +114,8 @@ const manager = await PatchManager.create(
       effects.rewrite(patch.name);
       pendingNotice = {
         patchId: patch.patchId,
-        text: `${version} · ${patch.name} by ${patch.author}`,
+        text: `${version} · ${patch.name}`,
+        author: patch.author,
         notes: (patch.origin === 'archive' ? 'From the archive · ' : '') + (patch.patchNotes ?? ''),
       };
 
@@ -223,8 +242,8 @@ function clock(seconds: number): string {
 }
 
 function updateHUD(): void {
-  if (pendingNotice && !effects.rewriting) {
-    notice(pendingNotice.text, false, pendingNotice.notes);
+  if (pendingNotice && !effects.rewriting && performance.now() >= revertUntil) {
+    notice(pendingNotice.text, false, pendingNotice.notes, pendingNotice.author);
     pendingNotice = undefined;
   }
   hp.textContent = `${Math.ceil(current.player.hp)} / ${current.player.maxHp}`;
@@ -259,7 +278,7 @@ function frame(now: number): void {
     requestAnimationFrame(frame);
     return;
   }
-  if (!playing) {
+  if (!playing && !entering) {
     landing?.update(now);
     canvas.dataset.tick = '0';
     canvas.dataset.paused = 'true';
@@ -271,7 +290,7 @@ function frame(now: number): void {
   if (lastFrame !== undefined) perf?.frame(now - lastFrame);
   if (lastFrame !== undefined) frameSamples.push(now - lastFrame);
   lastFrame = now;
-  const paused = !element('first-run').hidden;
+  const paused = entering || !element('first-run').hidden;
   const plan = paused ? { ticks: 0, accumulator: 0, alpha: 1 } : planFrame(accumulator, elapsed);
   accumulator = plan.accumulator;
   manager.update();
@@ -358,13 +377,16 @@ const ruleUI = new RuleUI({
 });
 if (playing) firstRun();
 else
-  landing = new Landing(() => {
+  landing = new Landing(async () => {
     controls.reset();
-    playing = true;
-    element('landing').hidden = true;
+    entering = true;
     stage.hidden = false;
     document.documentElement.classList.add('playing');
     element('first-run').hidden = true;
+    window.scrollTo(0, 0);
+    await revealGame(element('landing'), stage);
+    playing = true;
+    entering = false;
     try {
       localStorage.setItem('patch-notes-live:onboarded', '1');
     } catch {
@@ -372,7 +394,6 @@ else
     }
     lastFrame = undefined;
     accumulator = 0;
-    effects.rewrite('Your rules. Starting at v1.0.');
     canvas.focus({ preventScroll: true });
   });
 const server = params.get('server') ?? (import.meta.env.PROD ? 'off' : 'ws://localhost:8787');
