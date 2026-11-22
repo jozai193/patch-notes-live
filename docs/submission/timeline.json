@@ -1,0 +1,70 @@
+{
+  "durationSeconds": 151.21,
+  "voice": "aura-2-apollo-en",
+  "segments": [
+    {
+      "id": "01-hook",
+      "title": "You write the next patch",
+      "narration": "Most games give you a fixed set of rules. Patch Notes Live lets you change them while you're playing. I'm Aditya, and this is a survival game where your next idea becomes actual game code.",
+      "start": 0,
+      "speechSeconds": 13.2,
+      "duration": 13.649999999999999
+    },
+    {
+      "id": "02-rule",
+      "title": "One sentence, one rule",
+      "narration": "Let's make enemies run away from the player. I type one sentence into the rule box. Autopilot takes over while I'm typing, so the game keeps moving. This local run uses live Codex generation, not an archive match.",
+      "start": 13.649999999999999,
+      "speechSeconds": 14.72,
+      "duration": 15.17
+    },
+    {
+      "id": "03-compile",
+      "title": "Real code, independently checked",
+      "narration": "Codex opens a fresh temporary workspace and writes one JavaScript mod. The panel shows editing and testing progress. I've shortened the wait here. The server then runs its own verification, instead of trusting the model's claim that the tests passed.",
+      "start": 28.82,
+      "speechSeconds": 20.72,
+      "duration": 21.169999999999998
+    },
+    {
+      "id": "04-proof",
+      "title": "Seven checks before the game changes",
+      "narration": "Seven checks cover loading, stability, instruction budget, runaway spawning, survival, visible effect, and determinism. The simulator tries three seeds. Each approved mod runs inside its own isolated Quick JavaScript sandbox, with memory and instruction limits, and no network or browser access.",
+      "start": 49.989999999999995,
+      "speechSeconds": 23.08,
+      "duration": 23.529999999999998
+    },
+    {
+      "id": "05-rewrite",
+      "title": "The patch goes live",
+      "narration": "Now the patch is live. The version changes, the rule appears in the patch notes, and enemies start fleeing without reloading the game. This isn't a menu of predefined power-ups. Codex wrote the behavior for the sentence we just entered.",
+      "start": 73.52,
+      "speechSeconds": 16.28,
+      "duration": 16.73
+    },
+    {
+      "id": "06-watchdog",
+      "title": "Three patches, one running game",
+      "narration": "Up to three patches can run together. Add a fourth and the oldest expires. A watchdog also reverts mods that repeatedly fault or become too slow. Verification tests a limited window, so this live backstop matters after a patch has passed.",
+      "start": 90.25,
+      "speechSeconds": 17.76,
+      "duration": 18.21
+    },
+    {
+      "id": "07-archive",
+      "title": "Try it without a server",
+      "narration": "The public browser demo works without a server or an API key. It honestly labels its twenty-five archived patches, so judges can try huge players, rainbow enemies, or shrinking walls immediately. New AI-generated rules need the local setup and Codex access.",
+      "start": 108.46000000000001,
+      "speechSeconds": 20.56,
+      "duration": 21.009999999999998
+    },
+    {
+      "id": "08-close",
+      "title": "Patch Notes Live",
+      "narration": "The engine, sandbox, verifier, and live patch pipeline share one TypeScript project. The code is public, and the browser demo is ready to try. Type a rule. Watch the game rewrite itself. And please, leave the enemies some dignity.",
+      "start": 129.47,
+      "speechSeconds": 20.24,
+      "duration": 21.74
+    }
+  ]
+}

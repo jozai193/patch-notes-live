@@ -233,8 +233,15 @@ Write these yourself or with Codex: `split-on-hit`, `gravity-flip-every-10s`, `f
 - One token file serves CSS and canvas. Self-host display/body/code fonts, preserve intentional mod colors, add stable patch-slot identities and render-only spawn halos through read-only host provenance.
 - Replace cards with an edge HUD, versioned patch-notes feed, and Try one shortcuts in the rule composer. Keep feedback content fit, typing assistance, onboarding pause, offline protection, live hub and watchdog behavior.
 - Honor reduced motion, including static grid and crossfades in place of shake/tearing/typing. Show actual archive notes and plain-language labels.
-- Polish: reviewed archive `change` metadata drives marks; whole archive chips occupy two rows with More paging. Keep disclosure in the composer hint, controls in their own row, and patch cards below wave notices. Use “by you”, dismiss applied archive feedback after two seconds, and explicitly await a 360ms wipe / 240ms reduced-motion crossfade. Cover feedback/layout at 800x600 as well as the larger sizes.
+- Polish: reviewed archive `change` metadata drives marks; whole archive chips occupy two rows with More paging. Keep disclosure in the composer hint, controls in their own row, and patch cards below wave notices. Use “by you”, dismiss applied archive feedback after two seconds, and explicitly await a 240ms wipe / 180ms reduced-motion crossfade (shortened during submission preparation to leave CI scheduling headroom within the 450ms total limit). Cover feedback/layout at 800x600 as well as the larger sizes.
 - **Done when:** tsc, full root tests, lint, web build pass; save requested desktop/phone/diff/game/compile/revert screenshots and report real 150+ entity / three-patch FPS. No push or Step 10 work.
+
+### Submission preparation: Arbiter General Track (authorized November 22)
+
+- Freeze gameplay features at the completed Step 9 review. The owner authorized publication of the repository and static Pages demo, replacing the earlier no-push restriction for this submission-preparation task.
+- Rerun all checks, independently verify a fresh live Codex patch, prepare the General Track write-up and screenshots, and create a 2–3 minute narrated demo using the existing Jarvis Deepgram setup. Do not modify Jarvis or expose credentials.
+- Publish source/demo and the video artifact; leave final Devpost registration/rules agreement and submission approval explicit. Keep the static archive mode and local live-generation mode clearly distinguished.
+- No Step 10 or Twitch work is included.
 
 ### Step 10: Clustering and voting (Day 3)
 

@@ -1,0 +1,8 @@
+{
+  "date": "2026-11-22",
+  "tick": 4216,
+  "banner": "Patch reverted: Time bomb: game time exceeded 70 seconds",
+  "alive": true,
+  "source": "mods/samples/time-bomb.js",
+  "method": "Verified source applied via actual hub; browser running at fixed 60Hz; observed actual watchdog revert."
+}

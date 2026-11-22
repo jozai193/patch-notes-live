@@ -1,0 +1,79 @@
+{
+  "resolution": "1920x1080",
+  "fps": 30,
+  "segments": [
+    {
+      "scene": "01-hook",
+      "file": "archive.webm",
+      "in": 6.5,
+      "sourceSeconds": 13.649999999999999,
+      "duration": 13.649999999999999,
+      "label": "Browser archive - instant demo"
+    },
+    {
+      "scene": "02-rule",
+      "file": "live-complete.webm",
+      "in": 0,
+      "sourceSeconds": 15.17,
+      "duration": 15.17,
+      "label": "Live Codex - actual recorded run"
+    },
+    {
+      "scene": "03-compile",
+      "file": "live-complete.webm",
+      "in": 15,
+      "sourceSeconds": 39,
+      "duration": 21.169999999999998,
+      "label": "Live Codex - wait accelerated 1.8x"
+    },
+    {
+      "scene": "04-proof",
+      "file": "cards.webm",
+      "in": 1,
+      "sourceSeconds": 23.529999999999998,
+      "duration": 23.529999999999998,
+      "label": "Exact generated mod excerpt - actual verification results"
+    },
+    {
+      "scene": "05-rewrite",
+      "file": "live-complete.webm",
+      "in": 52,
+      "sourceSeconds": 16.73,
+      "duration": 16.73,
+      "label": "Live Codex - patch applied without a reload"
+    },
+    {
+      "scene": "06-watchdog",
+      "sources": [
+        {
+          "file": "archive.webm",
+          "in": 16,
+          "duration": 8.5
+        },
+        {
+          "file": "watchdog.webm",
+          "in": 69,
+          "duration": 9.71
+        }
+      ]
+    },
+    {
+      "scene": "07-archive",
+      "file": "archive.webm",
+      "in": 5,
+      "sourceSeconds": 21.009999999999998,
+      "duration": 21.009999999999998,
+      "label": "Browser demo - preverified archive, no live generation"
+    },
+    {
+      "scene": "08-close",
+      "file": "cards.webm",
+      "in": 26,
+      "sourceSeconds": 21.74,
+      "duration": 21.74,
+      "label": "Play online - run locally for new AI-generated rules"
+    }
+  ],
+  "audio": "Deepgram Aura 2 Apollo; original synthesized music bed; no stock music",
+  "captionSource": "Deepgram transcription of the actual synthesized narration, manually reviewed"
+}

@@ -1,0 +1,226 @@
+{
+  "date": "2026-11-22",
+  "request": "enemies run away from you",
+  "durationMs": 64087,
+  "events": [
+    {
+      "at": 1795346667661,
+      "v": 1,
+      "type": "compileEvent",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "phase": "queued",
+      "text": "Preparing your patch.",
+      "elapsedMs": 0,
+      "request": "enemies run away from you",
+      "author": "Aditya"
+    },
+    {
+      "at": 1795346667768,
+      "v": 1,
+      "type": "compileEvent",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "phase": "thinking",
+      "text": "Starting isolated Codex patch workspace.",
+      "elapsedMs": 53.01860000001034,
+      "request": "enemies run away from you",
+      "author": "Aditya"
+    },
+    {
+      "at": 1795346669988,
+      "v": 1,
+      "type": "compileEvent",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "phase": "thinking",
+      "text": "Planning the game rule.",
+      "elapsedMs": 2321.751199999999,
+      "request": "enemies run away from you",
+      "author": "Aditya"
+    },
+    {
+      "at": 1795346680455,
+      "v": 1,
+      "type": "compileEvent",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "phase": "editing",
+      "text": "Writing the requested game rule.",
+      "elapsedMs": 12790.404600000009,
+      "request": "enemies run away from you",
+      "author": "Aditya"
+    },
+    {
+      "at": 1795346691929,
+      "v": 1,
+      "type": "compileEvent",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "phase": "testing",
+      "text": "Running the patch tests.",
+      "elapsedMs": 24275.213000000047,
+      "request": "enemies run away from you",
+      "author": "Aditya"
+    },
+    {
+      "at": 1795346709896,
+      "v": 1,
+      "type": "compileEvent",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "phase": "testing",
+      "text": "Independently verifying the patch with three seeds.",
+      "elapsedMs": 42242.125100000005,
+      "request": "enemies run away from you",
+      "author": "Aditya"
+    },
+    {
+      "at": 1795346718742,
+      "v": 1,
+      "type": "compileEvent",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "phase": "testing",
+      "text": "Pipeline verified; checking at the hub.",
+      "elapsedMs": 51088.30430000002,
+      "request": "enemies run away from you",
+      "author": "Aditya"
+    },
+    {
+      "at": 1795346718747,
+      "v": 1,
+      "type": "compileEvent",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "phase": "testing",
+      "text": "Running the hub’s independent safety checks.",
+      "elapsedMs": 51092.48220000003,
+      "request": "enemies run away from you",
+      "author": "Aditya"
+    },
+    {
+      "at": 1795346727526,
+      "v": 1,
+      "type": "applyPatch",
+      "patchId": "e752806e-7bee-4169-98cc-221f92a2f172",
+      "name": "Enemies flee",
+      "description": "Enemies turn tail and run away from the player.",
+      "patchNotes": "Enemies have discovered fear. They now run away from you with tremendous commitment.",
+      "author": "Aditya",
+      "source": "export default {\n  name: 'Enemies flee',\n  description: 'Enemies turn tail and run away from the player.',\n  patchNotes: 'Enemies have discovered fear. They now run away from you with tremendous commitment.',\n  hooks: {\n    onTick(g, dt) {\n      for (const enemy of g.enemies()) {\n        const dx = enemy.x - g.player.x;\n        const dy = enemy.y - g.player.y;\n        const distance = Math.sqrt(dx * dx + dy * dy);\n        const nx = distance > 0.001 ? dx / distance : 1;\n        const ny = distance > 0.001 ? dy / distance : 0;\n        g.set(enemy, { vx: nx * 400, vy: ny * 400 });\n      }\n    },\n  },\n};\r\n",
+      "origin": "live"
+    },
+    {
+      "at": 1795346727530,
+      "v": 1,
+      "type": "compileEvent",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "phase": "passed",
+      "text": "All checks passed. Patch sent to the arena.",
+      "elapsedMs": 59870.16200000001,
+      "request": "enemies run away from you",
+      "author": "Aditya"
+    },
+    {
+      "at": 1795346727530,
+      "v": 1,
+      "type": "patchResult",
+      "requestId": "9172fee2-e5e0-46f7-802f-0bcb1a3c7245",
+      "status": "ok",
+      "reason": "Live Codex patch applied.",
+      "archived": false
+    }
+  ],
+  "ui": {
+    "patches": "1 / 3",
+    "notice": "v1.1 · Enemies flee by youEnemies have discovered fear. They now run away from you with tremendous commitment.",
+    "tick": "3842",
+    "gameOver": false,
+    "panel": "\n          \n            Compiling patch\n            60s\n          \n          “enemies run away from you” — Aditya\n          thinkingeditingtestingpassed\n          \n          Live Codex patch applied.\n          \n        "
+  },
+  "report": {
+    "ok": true,
+    "checks": [
+      {
+        "id": "load",
+        "ok": true,
+        "detail": "Valid ES-module export; 610/8192 bytes; no literal while(true)."
+      },
+      {
+        "id": "stability",
+        "ok": true,
+        "detail": "Seeds 1, 2, 3 completed 3600 tick attempts each, plus an independent seed-1 replay, with zero faults and no disabled mod."
+      },
+      {
+        "id": "budget",
+        "ok": true,
+        "detail": "Peak 1/64 polls (1.56%); no instruction-budget interrupts."
+      },
+      {
+        "id": "runaway",
+        "ok": true,
+        "detail": "Longest consecutive time at the 300-entity cap: 0.00 s (maximum 5)."
+      },
+      {
+        "id": "winnable",
+        "ok": true,
+        "detail": "Bot survived at least 20 s on a seed; all seed survival times: 1: 60.00s, 2: 60.00s, 3: 60.00s. No run ended under 5 s."
+      },
+      {
+        "id": "effect",
+        "ok": true,
+        "detail": "Visible effect in 900 ticks with the same seed and intents. Seed 1: player max offset 0.00px, mean enemy offset 124.03px, count difference 8, radius difference 0.00px, color false, shape false, glow false, physics false, arena false, UI events 0; Seed 2: player max offset 0.00px, mean enemy offset 228.39px, count difference 9, radius difference 0.00px, color false, shape false, glow false, physics false, arena false, UI events 0; Seed 3: player max offset 0.00px, mean enemy offset 240.22px, count difference 9, radius difference 0.00px, color false, shape false, glow false, physics false, arena false, UI events 0."
+      },
+      {
+        "id": "determinism",
+        "ok": true,
+        "detail": "Independent seed-1 runs match: SHA-256 ac46eb3f2aeebe87765c538445cb7f79b52c6ba5aa2f1877cdc34d5719bc25ad."
+      }
+    ],
+    "stats": {
+      "survivalSecondsBySeed": {
+        "1": 60,
+        "2": 60,
+        "3": 60
+      },
+      "maxEntities": 44,
+      "peakBudgetPct": 1.5625,
+      "sandboxMsP95": 0.7233000000001084,
+      "visibleEffectBySeed": {
+        "1": {
+          "playerMaxOffset": 0,
+          "meanEnemyOffset": 124.03277622030595,
+          "maxEntityCountDifference": 8,
+          "colorChanged": false,
+          "shapeChanged": false,
+          "glowChanged": false,
+          "maxRadiusDifference": 0,
+          "physicsChanged": false,
+          "arenaChanged": false,
+          "uiEvents": 0,
+          "ticksObserved": 900
+        },
+        "2": {
+          "playerMaxOffset": 0,
+          "meanEnemyOffset": 228.39241040567381,
+          "maxEntityCountDifference": 9,
+          "colorChanged": false,
+          "shapeChanged": false,
+          "glowChanged": false,
+          "maxRadiusDifference": 0,
+          "physicsChanged": false,
+          "arenaChanged": false,
+          "uiEvents": 0,
+          "ticksObserved": 900
+        },
+        "3": {
+          "playerMaxOffset": 0,
+          "meanEnemyOffset": 240.22123050773132,
+          "maxEntityCountDifference": 9,
+          "colorChanged": false,
+          "shapeChanged": false,
+          "glowChanged": false,
+          "maxRadiusDifference": 0,
+          "physicsChanged": false,
+          "arenaChanged": false,
+          "uiEvents": 0,
+          "ticksObserved": 900
+        }
+      }
+    },
+    "durationMs": 4775.4654
+  }
+}

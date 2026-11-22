@@ -4,11 +4,11 @@
 
 ![The redesigned game and its live patch notes](docs/screenshots/redesign/game-two-patches.png)
 
-**[Play online — URL to be added after GitHub Pages is enabled](#play-online)**
+**[Play in your browser](https://jozai193.github.io/patch-notes-live/)** · [Watch the 2½-minute demo](https://youtu.be/YeVphAUuCAU) · [Source code](https://github.com/jozai193/patch-notes-live)
 
 ## Play online
 
-The Pages link is a placeholder until the owner creates the repository and enables Pages. The web build includes **25 verified archive patches**. Try **“make the player huge”** or **“enemies run away from you”**, or click a patch under **Try one**. The demo labels archive use honestly; it does not claim to generate new code in the browser.
+Open **https://jozai193.github.io/patch-notes-live/**. The web build includes **25 verified archive patches**. Try **“make the player huge”** or **“enemies run away from you”**, or click a patch under **Try one**. The demo labels archive use honestly; it does not claim to generate new code in the browser.
 
 The landing page previews real archive mods in a separate attract-mode world. Press **Play in your browser** (or Enter) to start a fresh playable run. The diff headline and changelog ticker use actual archive rules and notes. The local setup link opens the canonical README section on the page.
 
@@ -100,7 +100,7 @@ npx vite preview
 
 The archive includes the five good samples, two generated CLI mods and all 18 available benchmark mods that passed a fresh verification. [Index](mods/archive/index.json) records names, original requests, funny notes and tags; [provenance](mods/archive/provenance.json) records their source paths. Matching uses normalized token overlap and synonyms, without a network call. `verify:archive` verifies the copied source and checks metadata consistency; it fails if anything is invalid or unindexed.
 
-The [Pages workflow](.github/workflows/pages.yml) checks, builds and deploys on pushes to `main`, following [GitHub’s custom workflow setup](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages). After creating the repository, enable **Settings → Pages → Source: GitHub Actions**. Add its URL above. No repository creation or push has been performed here.
+The [Pages workflow](.github/workflows/pages.yml) checks, builds and deploys on pushes to `main`, following [GitHub’s custom workflow setup](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages). The public repository uses GitHub Actions as its Pages source. The demo contains no server credentials.
 
 For OBS, add a 1280×720 Browser source at `http://localhost:5173/?obs=1&bot=1`, 60fps. Keep the local dev process running; use Interact for controls or let autopilot play.
 
@@ -109,6 +109,8 @@ For OBS, add a 1280×720 Browser source at `http://localhost:5173/?obs=1&bot=1`,
 Generation needs local Codex authentication/quota and can take up to 150 seconds. The web demo has a finite archive and approximate matching; it cannot invent a new rule. Passing the verifier is bounded evidence across three seeds and 60 seconds, not proof of unlimited safety, fun, long-term survival or compatibility between every combination of patches. Several benchmark effects are conditional; a boss scheduled after 30 seconds will not appear immediately. Moon gravity is subtle. The watchdog is a second line of defense, not a substitute for isolation. Twitch, public hosting of live generation, comprehensive moderation, accounts, and sound are not implemented.
 
 MIT licensed. [Architecture and scoped build plan](PLAN.md) · [Step 9 validation](docs/step-9-validation.md).
+
+[Arbiter demo packet and fresh verification](docs/submission/README.md) · [Submission draft](devpost-submission.md).
 
 [Judge-flow regression fixes and preview evidence](docs/step-9-fixes-validation.md).
 
