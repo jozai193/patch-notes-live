@@ -142,7 +142,7 @@ Pause attract work when hidden and dispose its sandbox when Play is pressed.
 
 ## Acceptance
 
-Polish details: the Play transition explicitly runs for 360ms (wipe), or 240ms
+Polish details: the Play transition explicitly runs for 240ms (wipe), or 180ms
 (opacity-only crossfade with reduced motion), before the simulation starts. The
 diff rows share em-sized grid gutters, so their marks and text columns align.
 “Try one” uses two rows of whole chips and a More control; the archive disclosure

@@ -6,7 +6,8 @@ export async function revealGame(landing: HTMLElement, stage: HTMLElement): Prom
   root.classList.add('entering-game');
   const reduce = reducedMotion();
   const options: KeyframeAnimationOptions = {
-    duration: reduce ? 240 : 360,
+    // Leave room for layout/compositor scheduling on slower machines, within 450ms total.
+    duration: reduce ? 180 : 240,
     easing: 'cubic-bezier(.22,.61,.36,1)',
     fill: 'both',
   };

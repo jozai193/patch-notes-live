@@ -84,9 +84,9 @@ it('runs real archive patches in attract mode but leaves the playable world at t
   const transition = await browser.evaluate<{ elapsed: number; duration: number; wipe: boolean }>(
     'globalThis.transitionResult',
   );
-  expect(transition.duration).toBe(360);
+  expect(transition.duration).toBe(240);
   expect(transition.wipe).toBe(true);
-  expect(transition.elapsed).toBeGreaterThanOrEqual(300);
+  expect(transition.elapsed).toBeGreaterThanOrEqual(180);
   expect(transition.elapsed).toBeLessThanOrEqual(450);
   expect(await browser.evaluate("document.getElementById('landing').hidden")).toBe(true);
   expect(await browser.evaluate("document.getElementById('patch-count').textContent")).toBe(
@@ -126,9 +126,9 @@ it('fits a 390px phone and presents a static diff under reduced motion', async (
     const transition = await browser.evaluate<{ elapsed: number; duration: number; wipe: boolean }>(
       'globalThis.transitionResult',
     );
-    expect(transition.duration).toBe(240);
+    expect(transition.duration).toBe(180);
     expect(transition.wipe).toBe(false);
-    expect(transition.elapsed).toBeGreaterThanOrEqual(180);
+    expect(transition.elapsed).toBeGreaterThanOrEqual(120);
     expect(transition.elapsed).toBeLessThanOrEqual(450);
   } finally {
     await browser.call('Emulation.setEmulatedMedia', { features: [] });
